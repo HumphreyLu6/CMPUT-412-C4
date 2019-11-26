@@ -7,20 +7,21 @@ import util, detectshapes
 from kobuki_msgs.msg import Led, Sound
 from sensor_msgs.msg import Image, LaserScan
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, Point, Quaternion
 import cv2, cv_bridge
+import tf
 
-SEARCH_WAYPOINTS = {'1': [(-0.822, -0.009, 0.010), (0, 0, 0.118, 0.993)],
-                    '2': [(-1.313,  1.434, 0.010), (0, 0, 0.127, 0.992)]}
+SEARCH_WAYPOINTS = {'1': [Point(-0.822, -0.009, 0.010), Quaternion(0, 0, 0.118, 0.993)],
+                    '2': [Point(-1.313,  1.434, 0.010), Quaternion(0, 0, 0.127, 0.992)]}
 
-PARK_SPOT_WAYPOINTS = {'1': [(-0.803,  2.353, 0.010), (0, 0,  0.105,  0.994)],
-                       '2': [(-0.608,  1.657, 0.010), (0, 0,  0.134,  0.991)],
-                       '3': [(-0.401,  0.869, 0.010), (0, 0,  0.124,  0.992)],
-                       '4': [(-0.291,  0.079, 0.010), (0, 0,  0.106,  0.994)],
-                       '5': [(-0.169, -0.719, 0.010), (0, 0,  0.092,  0.996)],
-                       '6': [(-1.922,  1.029, 0.010), (0, 0,  0.997, -0.080)],
-                       '7': [(-1.694,  0.291, 0.010), (0, 0,  0.992, -0.123)],
-                       '8': [(-1.077, -0.846, 0.010), (0, 0, -0.621,  0.784)]}
+PARK_SPOT_WAYPOINTS = {'1': [Point(-0.803,  2.353, 0.010), Quaternion(0, 0,  0.105,  0.994)],
+                       '2': [Point(-0.608,  1.657, 0.010), Quaternion(0, 0,  0.134,  0.991)],
+                       '3': [Point(-0.401,  0.869, 0.010), Quaternion(0, 0,  0.124,  0.992)],
+                       '4': [Point(-0.291,  0.079, 0.010), Quaternion(0, 0,  0.106,  0.994)],
+                       '5': [Point(-0.169, -0.719, 0.010), Quaternion(0, 0,  0.092,  0.996)],
+                       '6': [Point(-1.922,  1.029, 0.010), Quaternion(0, 0,  0.997, -0.080)],
+                       '7': [Point(-1.694,  0.291, 0.010), Quaternion(0, 0,  0.992, -0.123)],
+                       '8': [Point(-1.077, -0.846, 0.010), Quaternion(0, 0, -0.621,  0.784)]}
 
 OFF_RAMP_WAYPOINT = [(-1.895, -0.507, 0.010), (0.000, 0.000, 0.326, 0.945)] #start
 
@@ -28,96 +29,126 @@ OFF_RAMP_WAYPOINT = [(-1.895, -0.507, 0.010), (0.000, 0.000, 0.326, 0.945)] #sta
 ON_RAMP_WAYPOINT = [(-2.901, 1.809, 0.010), (0.000, 0.000, 0.960, -0.281)] #end
 #ON_RAMP_WAYPOINT = [(-2.961, 1.680, 0.010), (0.000, 0.000, 0.960, -0.281)] #end
 
-class Park(smach.State):
+class PushBox(smach.State):
     def __init__(self):
         smach.State.__init__(self,
-                                outcomes=['next', 'end', 'return'],
-                                input_keys=['Park_in_process'],
-                                output_keys=['Park_in_process']
+                                outcomes=['completed', 'end']
         )
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.client.wait_for_server()
+        self.listener = tf.TransformListener()
+        self.box_tag_id = None
+        self.goal_tag_id = None
+        self.box_waypoint = None
+        self.goal_waypoint = None
 
     def execute(self, userdata):
-        if rospy.is_shutdown():
-            return 'end'
-        else:
-            process = userdata.Park_in_process
-            if process['spot_id'] == 1:
-                self.set_init_map_pose()
-            if process['spot_id'] > 8:
-                return 'return'
-            waypoint = PARK_SPOT_WAYPOINTS[str(process['spot_id'])]
-            goal = util.goal_pose(waypoint, 'map', 'list')
-            self.client.send_goal(goal)
-            self.client.wait_for_result()
-            #util.signal(process['spot_id'], onColor=Led.BLACK) #debug
-            search_orientation = [0]
-            if process['spot_id'] == 1:
-                search_orientation.append(90)
-            elif process['spot_id'] == 5:
-                search_orientation.append(-90)
+        self.set_init_map_pose()
 
-            process = self.search(process, search_orientation)
-            process['spot_id'] += 1
-            if process['ARtag_found'] and process['contour_found'][1] and process['unmarked_spot_id'][1]:
-                return 'return'
-            return 'next'
+        ar_tag_sub = rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self.ar_tag_sub_callback)
+        print "Waiting for /ar_pose_marker message..."
+        rospy.wait_for_message('/ar_pose_marker', AlvarMarkers)
+        twist_pub = rospy.Publisher("/cmd_vel_mux/input/teleop", Twist, queue_size=1)
 
-
-    def search(self, process, search_orientation = [0]):
-        if process['ARtag_found'] == False:
-            ar_sub = rospy.Subscriber("ar_pose_marker", AlvarMarkers, self.ar_callback)
-            rospy.wait_for_message("ar_pose_marker", AlvarMarkers)
-        if process['contour_found'][1] == False:
-            image_sub = rospy.Subscriber("camera/rgb/image_raw", Image, self.shape_cam_callback)
-            rospy.wait_for_message("camera/rgb/image_raw", Image)
-
-        for angle in search_orientation:
-            if angle != 0:
-                util.rotate(angle)
-            if process['ARtag_found'] == False and self.search_ARtag():
-                util.signal(1, onColor=Led.GREEN)
-                process['ARtag_found'] = True
-
-            if process['contour_found'][1] == False and self.search_contour(process):
-                util.signal(1, onColor=Led.ORANGE)
-                process['contour_found'][1] = True
-
-            if process['ARtag_found'] and process['contour_found'][1]:
+        tmp_time = time.time()
+        while True:
+            if rospy.is_shutdown():
+                return 'end'
+            if self.box_tag_id != None and self.goal_tag_id != None:
                 break
+            if time.time() - tmp_time > 3:
+                goal_pose = util.goal_pose('map', SEARCH_WAYPOINTS['2'][0], SEARCH_WAYPOINTS['2'][1])
+                self.client.send_goal(goal_pose)
+                self.client.wait_for_result()
+            twist = Twist()
+            twist.angular.z = 0.1
+            twist_pub.publish(twist)
+            
+        while True:
+            if rospy.is_shutdown():
+                ar_tag_sub.unregister()
+                return 'end'
+            try:
+                (trans,rots) = self.listener.lookupTransform('map', '/ar_marker_' + str(self.box_tag_id), rospy.Time(0))
+                point = Point(trans[0], trans[1], trans[2])
+                #quaternion = Quaternion(rots[0],rots[1],rots[2],rots[3])
+                quaternion = Quaternion(0, 0, 0.118, 0.993)
+                self.box_waypoint = util.goal_pose('map', point, quaternion)
+                print "self.box_waypoint", self.box_waypoint
+                (trans,rots) = self.listener.lookupTransform('/map', '/ar_marker_' + str(self.goal_tag_id), rospy.Time(0))
+                point = Point(trans[0], trans[1], 0.010)
+                # quaternion = Quaternion(rots[0],rots[1],rots[2],rots[3])
+                quaternion = Quaternion(0, 0, 0.118, 0.993)
+                self.goal_waypoint = util.goal_pose('map', point, quaternion)
+                print "self.goal_waypoint", self.goal_waypoint
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+            finally:
+                if self.box_waypoint != None and self.goal_waypoint != None:
+                    break
+                print "Try to get waypoints:", self.box_waypoint, self.goal_waypoint
+        
+        
+        print get_cloest_stall(self.goal_waypoint.target_pose.pose.position)
+        
+        # self.client.send_goal(self.goal_waypoint)
+        # goal_pose = util.goal_pose('map', PARK_SPOT_WAYPOINTS['7'][0], PARK_SPOT_WAYPOINTS['7'][1])
+        # self.client.send_goal(goal_pose)
+        # self.client.wait_for_result()
+        # util.signal(3)
+        # self.client.send_goal(self.box_waypoint)
+        # self.client.wait_for_result()
+        # util.signal(1)
 
-        #unregister
+        assert self.box_waypoint != None and self.goal_waypoint != None
 
-        if process['spot_id'] == process['unmarked_spot_id'][0]:
-            util.signal(1, onColor=Led.RED)
-            process['unmarked_spot_id'][1] = True
-        return process
+        self.box_stall_id = get_cloest_stall(self.box_waypoint.target_pose.pose.position)
+        self.goal_stall_id = get_cloest_stall(self.goal_waypoint.target_pose.pose.position)
+        print self.box_stall_id, self.goal_stall_id
+        assert self.box_stall_id != self.goal_stall_id
 
-    def search_ARtag(self):
-        if len(self.tags) != 0:
-            print "tag_id:", self.tags[0]
-            return True
-        return False
+        box_is_left = True
+        if int(self.box_stall_id) > int(self.goal_stall_id):
+            box_is_left = False
 
-    def search_contour(self, process):
-        cd = detectshapes.ContourDetector()
-        _, red_contours = cd.getContours(self.hsv)
-        if len(red_contours) > 0:
-            if red_contours[0] == process['contour_found'][0]:
-                return True
-        return False
+        square_dist = 0.825
+        if box_is_left:
+            point = PARK_SPOT_WAYPOINTS[str(int(self.box_stall_id)-1)][0]
+            quaternion = PARK_SPOT_WAYPOINTS[str(int(self.box_stall_id)-1)][1]
+            goal_pose = util.goal_pose('map', point, quaternion)
+            self.client.send_goal(goal_pose)
+            self.client.wait_for_result()
+            util.signal(1, onColor=Led.BLACK) #debug
+            util.rotate(-87)
+            push_dist = abs( int(self.box_stall_id)- int(self.goal_stall_id) + 1) * square_dist
+            util.move(push_dist)
+            util.signal(2, onColor=Led.GREEN)
+            util.rotate(87)
+        else:
+            point = PARK_SPOT_WAYPOINTS[str(int(self.box_stall_id)+1)][0]
+            quaternion = PARK_SPOT_WAYPOINTS[str(int(self.box_stall_id)+1)][1]
+            goal_pose = util.goal_pose('map', point, quaternion)
+            self.client.send_goal(goal_pose)
+            self.client.wait_for_result()
+            util.signal(1, onColor=Led.BLACK) #debug
+            util.rotate(87)
+            push_dist = abs( int(self.box_stall_id)- int(self.goal_stall_id) + 1) * square_dist
+            util.move(push_dist)
+            util.signal(2, onColor=Led.GREEN)
+            util.rotate(-87)
 
-    def ar_callback(self, msg):
-        self.tags = []
+        ar_tag_sub.unregister()
+        return 'completed'
+  
+    def ar_tag_sub_callback(self, msg):
         for marker in msg.markers:
-            self.tags.append(int(marker.id))
-
-    def shape_cam_callback(self, msg):
-        bridge = cv_bridge.CvBridge()
-        image = bridge.imgmsg_to_cv2(msg, desired_encoding = 'bgr8')
-        self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
+            if marker.id == 6 and self.box_tag_id == None:
+                self.box_tag_id = marker.id
+                util.signal(quantity=1, onColor=Led.RED)
+            if marker.id == 30 and self.goal_tag_id == None:
+                self.goal_tag_id = marker.id
+                util.signal(quantity=1, onColor=Led.GREEN)
+    
     def set_init_map_pose(self):
         #referenced from https://www.cnblogs.com/kuangxionghui/p/8335853.html
 
@@ -139,11 +170,54 @@ class Park(smach.State):
         p.pose.covariance[6 * 1 + 1] = 0.5 * 0.5
         p.pose.covariance[6 * 3 + 3] = math.pi / 12.0 * math.pi / 12.0
 
-        for _ in range(1):
-            tmp = time.time()
-            init_pose_pub.publish(p)
-            #util.signal(1)
+        init_pose_pub.publish(p)
         rospy.sleep(3)
+            
+class SearchContour(smach.State):
+    def __init__(self):
+        smach.State.__init__(self,
+                                outcomes=['completed', 'end'],
+                                input_keys=['SearchContour_in_contour'])
+
+        self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        self.client.wait_for_server()
+        self.hsv = None
+
+    def execute(self, userdata):
+        if rospy.is_shutdown():
+            return 'end'
+        else:
+            contour = userdata.SearchContour_in_contour
+            assert isinstance(contour) == detectshapes.Contour
+
+            cd = detectshapes.ContourDetector()
+            image_sub = rospy.Subscriber("camera/rgb/image_raw", Image, self.shape_cam_callback)
+            print "Waiting for camera/rgb/image_raw message..."
+            rospy.wait_for_message("camera/rgb/image_raw", Image)
+
+            for stall_id in ['5', '6', '7']:
+                goal_pose = util.goal_pose('map', 
+                            point=PARK_SPOT_WAYPOINTS[stall_id][0],
+                            quaternion=PARK_SPOT_WAYPOINTS[stall_id][1])
+                self.client.send_goal(goal_pose)
+                self.client.wait_for_result()
+                while self.hsv == None:
+                    pass
+                _, red_contours = cd.getContours(self.hsv)
+            
+                if len(red_contours) > 0:
+                    if red_contours[0] == contour:
+                        util.signal(1, onColor=Led.ORANGE)
+                        util.signal(2, onColor=Led.ORANGE)
+                    return 'completed'
+    
+    def shape_cam_callback(self, msg):
+        bridge = cv_bridge.CvBridge()
+        image = bridge.imgmsg_to_cv2(msg, desired_encoding = 'bgr8')
+        self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    
+    
+                
 
 class ON_RAMP(smach.State):
     def __init__(self):
@@ -157,7 +231,7 @@ class ON_RAMP(smach.State):
         if rospy.is_shutdown():
             return 'end'
         else:
-            goal = util.goal_pose(ON_RAMP_WAYPOINT,frame_id='map')
+            goal = util.goal_pose('map', ON_RAMP_WAYPOINT[0], ON_RAMP_WAYPOINT[1])
             self.client.send_goal(goal)
             self.client.wait_for_result()
 
@@ -172,24 +246,35 @@ class ON_RAMP(smach.State):
             twist.linear.x = 0.3
             twist_pub.publish(twist)
 
+def get_cloest_stall(target):
+    minidist = float('inf')
+    cloest_stall_id = 1
+    for stall_id in PARK_SPOT_WAYPOINTS:
+        stall_point = PARK_SPOT_WAYPOINTS[stall_id][0]
+        dist = math.sqrt( (stall_point.x - target.x)**2 + (stall_point.y - target.y)**2 )
+        print stall_id, dist
+        if dist < minidist:
+            minidist = dist
+            cloest_stall_id = stall_id
+    return cloest_stall_id
+
 if __name__ == "__main__":
     rospy.init_node("work4_test")
 
-    sm = smach.StateMachine(outcomes=['end'])
-    sm.userdata.process = {'spot_id': 1,
-                            'ARtag_found': False,
-                            'contour_found': [None,False],
-                            'unmarked_spot_id': [8,False]
-                            }
+    sm = smach.StateMachine(outcomes=['end', 'returned'])
+    sm.userdata.contour = detectshapes.Contour.Triangle
 
     with sm:
-        smach.StateMachine.add('Park', Park(),
-                                transitions={'next':'Park',
-                                            'end':'end',
-                                            'return':'ON_RAMP'
-                                            },
-                                remapping={'Park_in_process':'process',
-                                           'Park_in_process':'process'})
+        smach.StateMachine.add('PushBox', PushBox(),
+                                transitions={'completed':'SearchContour',
+                                            'end':'end'
+                                            })
+
+        smach.StateMachine.add('SearchContour', SearchContour(),
+                                transitions={'end':'end',
+                                             'completed':'ON_RAMP'},
+                                remapping={'SearchContour_in_contour':'contour'})
+
         smach.StateMachine.add('ON_RAMP', ON_RAMP(),
                                 transitions={'end':'end',
                                              'returned':'returned'})

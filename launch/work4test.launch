@@ -2,7 +2,7 @@
     <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
     <!--include file="$(find turtlebot_bringup)/launch/3dsensor.launch"/-->
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-        <arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c3/map.yaml"/>
+        <arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c4/map.yaml"/>
     </include>
     <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/>
     
@@ -11,9 +11,9 @@
     <arg name="max_track_error" default="0.2" />
     <arg name="cam_image_topic" default="/camera/rgb/image_raw" />
     <arg name="cam_info_topic" default="/camera/rgb/camera_info" />
-    <arg name="output_frame" default="/base_link" />
+    <arg name="output_frame" default="/map" />
 
-    <node name="work4" pkg="c3" type="work4.py" output="screen"/>
+    <node name="work4" pkg="c4" type="work4.py" output="screen"/>
 
     <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
         <param name="marker_size"           type="double" value="$(arg marker_size)" />

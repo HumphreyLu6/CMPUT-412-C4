@@ -29,6 +29,7 @@ from nav_msgs.msg import OccupancyGrid
 from detectshapes import ContourDetector
 from detectshapes import Contour
 from util import signal, rotate
+import util
 
 import work4
 
@@ -36,60 +37,28 @@ import work4
 def approxEqual(a, b, tol = 0.001):
     return abs(a - b) <= tol
 
-def move_forward(meters):
-    global g_odom, twist_pub
-    ori_x = g_odom['x']
-    ori_y = g_odom['y']
-    twist = Twist()
-    twist.linear.x = 0.1
-    if meters < 0 :
-        twist.linear.x = -0.1
-    while True:
-        twist_pub.publish(twist)
-        if abs(ori_x - g_odom['x']) > abs(meters) or abs(ori_y - g_odom['y']) > abs(meters):
-            break
-
 class Wait(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['start', 'end'])
+        self.start = False
 
     def execute(self, userdata):
-        global g_start, unmarked_spot_id
-
         joy_sub = rospy.Subscriber("joy", Joy, self.joy_callback)
         while not rospy.is_shutdown():
-            if g_start and unmarked_spot_id != None:
+            if self.start:
                 joy_sub.unregister()
                 return 'start'
         joy_sub.unregister()
         return 'end'
 
     def joy_callback(self, msg):
-        global unmarked_spot_id, g_start
-        if msg.buttons[0] == 1: #X
-            unmarked_spot_id = 1
-        if msg.buttons[1] == 1: #A
-            unmarked_spot_id = 2
-        if msg.buttons[2] == 1: #B
-            unmarked_spot_id = 3
-        if msg.buttons[3] == 1: #Y
-            unmarked_spot_id = 4
-        if msg.buttons[4] == 1: #LB
-            unmarked_spot_id = 5
-        if msg.buttons[5] == 1: #RB
-            unmarked_spot_id = 6
-        if msg.buttons[6] == 1: #LT
-            unmarked_spot_id = 7
-        if msg.buttons[7] == 1: #RT
-            unmarked_spot_id = 8
         if msg.buttons[9] == 1: #start
-            g_start = True
-
-        print unmarked_spot_id, g_start
+            self.start = True
+        print "start =", self.start
 
 class Follow(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['running', 'end', 'turning', 'work4'], output_keys=['process'])
+        smach.State.__init__(self, outcomes=['running', 'end', 'turning', 'work4'], output_keys=['contour'])
 
     def execute(self, userdata):
         global stop, turn, twist_pub, current_work, unmarked_spot_id, shape_at_loc2, g_red_line_count, work4_returned
@@ -120,11 +89,7 @@ class Follow(smach.State):
                 while time.time() - tmp_time < 2:
                     twist_pub.publish(current_twist)
                 twist_pub.publish(Twist())
-                userdata.process = {
-                                    'spot_id': 1,
-                                    'ARtag_found': False,
-                                    'contour_found': [shape_at_loc2,False],
-                                    'unmarked_spot_id': [unmarked_spot_id,False]}
+                userdata.contour = shape_at_loc2
                 return 'work4'
 
             return 'end'
@@ -155,7 +120,7 @@ class Rotate(smach.State):
         )
 
     def execute(self, userdata):
-        global g_odom, turn, work, current_work, twist_pub, on_additional_line
+        global turn, work, current_work, twist_pub, on_additional_line
         #rotate(userdata.rotate_turns_in * 90, anglular_scale=1.0)
         rotate(userdata.rotate_turns_in * 85, anglular_scale=1.0)
         turn = False
@@ -195,9 +160,9 @@ class Work1(smach.State):
 
     def execute(self, userdata):
         global work, current_work
-        move_forward(-0.05)
+        util.move(-0.05, linear_scale = 0.1, max_error = 0.01)
         self.observe()
-        move_forward(0.05)
+        util.move(0.05, linear_scale = 0.1, max_error = 0.01)
         work = False
         current_work += 1
         userdata.rotate_turns = -1
@@ -208,6 +173,9 @@ class Work1(smach.State):
         global twist_pub
         cd = ContourDetector()
         image_sub = rospy.Subscriber("camera/rgb/image_raw", Image, self.shape_cam_callback)
+        print "Waiting for camera/rgb/image_raw message..."
+        rospy.wait_for_message("camera/rgb/image_raw", Image)
+
         time.sleep(2)
 
         tmp = time.time()
@@ -244,6 +212,8 @@ class Work2(smach.State):
 
         cd = ContourDetector()
         image_sub = rospy.Subscriber("camera/rgb/image_raw", Image, self.shape_cam_callback)
+        print "Waiting for camera/rgb/image_raw message..."
+        rospy.wait_for_message("camera/rgb/image_raw", Image)
         time.sleep(1)
 
         tmp = time.time()
@@ -291,7 +261,7 @@ class Work2Follow(smach.State):
             return 'returned'
 
     def control_speed(self):
-        global white_mask, red_mask, g_odom, twist_pub, image_width, current_work
+        global white_mask, red_mask, twist_pub, image_width, current_work
 
         M_white = cv2.moments(white_mask)
         M_red = cv2.moments(red_mask)
@@ -321,7 +291,7 @@ class Work2Follow(smach.State):
             twist_pub.publish(Twist())
             if M_red['m00'] > 0 and current_work == 3:
                 print 'saw red'
-                move_forward(0.1)
+                util.move(0.1, linear_scale = 0.1, max_error = 0.02)
 
 class Work3(smach.State):
     def __init__(self):
@@ -334,9 +304,9 @@ class Work3(smach.State):
     def execute(self, userdata):
         global work, current_work, redline_count_loc3
         redline_count_loc3 += 1
-        move_forward(-0.05)
+        util.move(-0.05, linear_scale = 0.1, max_error = 0.01)
         self.observe()
-        move_forward(0.05)
+        util.move(0.05, linear_scale = 0.1, max_error = 0.01)
         work = False
         if redline_count_loc3 >= 3:
             current_work += 1
@@ -347,6 +317,8 @@ class Work3(smach.State):
         global current_work, shape_at_loc2, redline_count_loc3, task3_finished
         cd = ContourDetector()
         image_sub = rospy.Subscriber("camera/rgb/image_raw", Image, self.shape_cam_callback)
+        print "Waiting for camera/rgb/image_raw message..."
+        rospy.wait_for_message("camera/rgb/image_raw", Image)
         time.sleep(1)
         tmp = time.time()
         while True and (time.time() - tmp) < 5:
@@ -415,16 +387,19 @@ class SmCore:
                                     remapping={'rotate_turns':'turns'})
 
             # Create the sub SMACH state machine
-            sm_sub_work4 = smach.StateMachine(outcomes=['end', 'returned'], output_keys=['process'], input_keys=['process'])
+            sm_sub_work4 = smach.StateMachine(outcomes=['end', 'returned'], input_keys=['contour'])
             # Open the container
             with sm_sub_work4:
-                smach.StateMachine.add('Park', work4.Park(),
-                                        transitions={'next':'Park',
-                                                    'end':'end',
-                                                    'return':'ON_RAMP'
-                                                    },
-                                        remapping={'Park_in_process':'process',
-                                                   'Park_in_process':'process'})
+                smach.StateMachine.add('PushBox', work4.PushBox(),
+                                        transitions={'completed':'SearchContour',
+                                                    'end':'end'
+                                                    })
+
+                smach.StateMachine.add('SearchContour', work4.SearchContour(),
+                                        transitions={'end':'end',
+                                                    'completed':'ON_RAMP'},
+                                        remapping={'SearchContour_in_contour':'contour'})
+
                 smach.StateMachine.add('ON_RAMP', work4.ON_RAMP(),
                                         transitions={'end':'end',
                                                     'returned':'returned'})
@@ -442,24 +417,8 @@ class SmCore:
             self.Ki = 0.0
 
             rospy.Subscriber('usb_cam/image_raw', Image, self.usb_image_callback)
-            rospy.Subscriber('odom', Odometry, self.odom_callback)
-            #rospy.Subscriber('camera/rgb/image_raw', Image, self.kinect_image_callback)
-            #rospy.Subscriber("/joy", Joy, self.joy_callback)
-
-    def odom_callback(self, msg):
-        global g_odom
-        x = msg.pose.pose.position.x
-        y = msg.pose.pose.position.y
-        yaw = euler_from_quaternion([
-            msg.pose.pose.orientation.x,
-            msg.pose.pose.orientation.y,
-            msg.pose.pose.orientation.z,
-            msg.pose.pose.orientation.w,
-        ])
-
-        g_odom['x'] = x
-        g_odom['y'] = y
-        g_odom['yaw_z'] = yaw[2]
+            print "Waiting for usb_cam/image_raw message..."
+            rospy.wait_for_message("usb_cam/image_raw", Image)
 
     def usb_image_callback(self, msg):
         global stop, turn, current_work, white_mask, red_mask, image_width
@@ -567,8 +526,6 @@ white_mask = None
 red_mask = None
 task3_finished = False
 image_width = 0
-g_odom = {'x':0.0, 'y':0.0, 'yaw_z':0.0}
-g_start = False
 unmarked_spot_id = None
 work4_returned = False
 rospy.init_node('c2_main')

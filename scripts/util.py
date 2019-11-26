@@ -2,7 +2,7 @@
 import rospy
 import numpy
 from enum import Enum
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point, Quaternion
 from nav_msgs.msg import Odometry
 from rospy import ROSException
 from ros_numpy import numpify
@@ -42,33 +42,20 @@ def wait_for_odom_angle(timeout=None):
     theta = angles[2] * 180 / 3.14159
     return theta
 
-def goal_pose(pose, frame_id = "goal", pose_type = 'list'): 
+def goal_pose(frame_id, point = Point(0, 0, 0), quaternion = Quaternion(0, 0, 0, 1)):  
+    '''
+    Params: frame_id, point = Point(0, 0, 0), quaternion = Quaternion(0, 0, 0, 1)
+    Return: goal_pose
+    '''  
     goal_pose = MoveBaseGoal()
-
     goal_pose.target_pose.header.frame_id = frame_id
-    if pose_type == 'pose':
-        goal_pose.target_pose.pose.position.x = pose.position.x
-        goal_pose.target_pose.pose.position.y = pose.position.y
-        goal_pose.target_pose.pose.position.z = pose.position.z
-        
-        goal_pose.target_pose.pose.orientation.x = pose.orientation.x
-        goal_pose.target_pose.pose.orientation.y = pose.orientation.y
-        goal_pose.target_pose.pose.orientation.z = pose.orientation.z
-        goal_pose.target_pose.pose.orientation.w = pose.orientation.w
-    else:
-        goal_pose.target_pose.pose.position.x = pose[0][0]
-        goal_pose.target_pose.pose.position.y = pose[0][1]
-        goal_pose.target_pose.pose.position.z = pose[0][2]
-        
-        goal_pose.target_pose.pose.orientation.x = pose[1][0]
-        goal_pose.target_pose.pose.orientation.y = pose[1][1]
-        goal_pose.target_pose.pose.orientation.z = pose[1][2]
-        goal_pose.target_pose.pose.orientation.w = pose[1][3]
+    goal_pose.target_pose.pose.position = point
+    goal_pose.target_pose.pose.orientation = quaternion
     return goal_pose
     
 def rotate(angle=90, max_error=3, anglular_scale=1.0):
     '''
-    input: angle=90, max_error=3, anglular_scale=1.0
+    input: angle=90, max_error=3, anglular_scale=1.0, positive numbers turn left
     '''
 
     init_theta = wait_for_odom_angle()
@@ -85,6 +72,19 @@ def rotate(angle=90, max_error=3, anglular_scale=1.0):
         out_twist.angular.z = direction * anglular_scale
         twist_pub.publish(out_twist)
         theta = wait_for_odom_angle()
+    twist_pub.publish(Twist())
+
+def move(distance=0.1, max_error=0.03, linear_scale=0.1):
+    '''
+    params: distance=0.1, max_error=0.03, linear_scale=0.1
+    '''
+    odom = rospy.wait_for_message("odom", Odometry)
+    init_pose = odom
+    while (init_pose.pose.pose.position.x - odom.pose.pose.position.x)**2 + (init_pose.pose.pose.position.y - odom.pose.pose.position.y)**2 < abs(distance)**2:
+        out_twist = Twist()
+        out_twist.linear.x = numpy.sign(distance) * linear_scale
+        twist_pub.publish(out_twist)
+        odom = rospy.wait_for_message("odom", Odometry)
     twist_pub.publish(Twist())
 
 if __name__ == "__main__":
