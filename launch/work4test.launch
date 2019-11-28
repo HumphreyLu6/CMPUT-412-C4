@@ -4,7 +4,7 @@
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
         <arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c4/map.yaml"/>
     </include>
-    <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/>
+    <!-- <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/> -->
     
     <arg name="marker_size" default="19.9" />
     <arg name="max_new_marker_error" default="0.08" />
@@ -13,7 +13,7 @@
     <arg name="cam_info_topic" default="/camera/rgb/camera_info" />
     <arg name="output_frame" default="/map" />
 
-    <node name="work4" pkg="c4" type="work4_alpha.py" output="screen"/>
+    <node name="work4" pkg="c4" type="work4_belta.py" output="screen"/>
 
     <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
         <param name="marker_size"           type="double" value="$(arg marker_size)" />

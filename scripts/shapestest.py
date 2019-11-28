@@ -50,7 +50,7 @@ if __name__ == "__main__":
     
     s_time = time.time()
     while not rospy.is_shutdown():
-        cd.getContours(g_hsv, int(sys.argv[1]))
+        print cd.getContours(g_hsv, int(sys.argv[1]))
         print time.time()
         # if (time.time() - s_time) >= 3:
         #     cd.getContours(g_hsv, int(sys.argv[1]))
