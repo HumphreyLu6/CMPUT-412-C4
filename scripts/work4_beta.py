@@ -50,10 +50,10 @@ BOX_EDGE_LENGTH = 0.334
 SQUARE_DIST = 0.825
 
 
-AMCL_APPROACH_BOX = 0.33 
+AMCL_APPROACH_BOX = 0.31 
 
 BOX_TAG_ID = 6
-GOAL_TAG_ID = 30
+GOAL_TAG_ID = 20
 
 BOX_SIDE_OFFSET_FORM_MIDDLE = 0.5
 BOX_MIDDLE_OFFSET_FROM_TAG = (0, 0, -BOX_EDGE_LENGTH/2)
@@ -157,7 +157,8 @@ class PushBox(smach.State):
                 else:
                     util.move(-0.6, linear_scale=0.3)
                     self.go_to_side('box_front')
-
+                    # util.move(AMCL_APPROACH_BOX)
+                    # rospy.sleep(1)
                     push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
                     util.move(push_dist, linear_scale= 0.2)
         else:
@@ -181,11 +182,11 @@ class PushBox(smach.State):
                 push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
                 util.move(push_dist, linear_scale= 0.2)
 
-        if self.fine_tune(box_is_left, push_dist) == 'lost_box':
-            goal_pose = util.goal_pose('map', OFF_RAMP_WAYPOINT[0], OFF_RAMP_WAYPOINT[1])
-            self.client.send_goal(goal_pose)
-            self.client.wait_for_result()
-            return 'restart'
+        # if self.fine_tune(box_is_left, push_dist) == 'lost_box':
+        #     goal_pose = util.goal_pose('map', OFF_RAMP_WAYPOINT[0], OFF_RAMP_WAYPOINT[1])
+        #     self.client.send_goal(goal_pose)
+        #     self.client.wait_for_result()
+        #     return 'restart'
         
         ar_tag_sub.unregister()
         return 'completed'
@@ -291,8 +292,8 @@ class PushBox(smach.State):
             error_x += 0.3
         error_y = box_middle_point.y - PARK_SPOT_WAYPOINTS[str(self.goal_stall_id)][0].y
 
-        push_right_dist = error_y if error_y > 0 and abs(error_y) >= 0.5 else 0
-        push_left_dist = -error_y if error_y < 0 and abs(error_y) >= 0.5 else 0
+        push_right_dist = error_y if error_y > 0 and abs(error_y) >= 0.05 else 0
+        push_left_dist = -error_y if error_y < 0 and abs(error_y) >= 0.05 else 0
         push_forward = - error_x if error_x < 0 else 0
 
         if self.goal_stall_id == 5:
@@ -304,13 +305,13 @@ class PushBox(smach.State):
             print "fine_tune:", "push_right ", push_right_dist, "push_left", push_left_dist, "push_forward", push_forward
             if push_left_dist != 0:
                 self.go_to_side('box_front')
-                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale= 0.2)
+                util.move(AMCL_APPROACH_BOX, linear_scale= 0.2)
                 util.move(push_left_dist)
                 util.move(-1, linear_scale=0.3)
             
             if push_forward != 0:
                 self.go_to_side('box_left')
-                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX - 0.2, linear_scale=0.2)
                 util.move(push_forward)
                 util.move(-0.5, linear_scale= 0.3)
         
@@ -319,19 +320,19 @@ class PushBox(smach.State):
                     self.go_to_side('box_left')
                     util.move(-0.5, linear_scale= 0.3)
                 self.go_to_side('box_left')
-                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
                 util.move(push_right_dist)
         else: # box is right to the goal, robot is left to the box
             print "fine_tune:", "push_right ", push_right_dist, "push_left", push_left_dist, "push_forward", push_forward
             if push_right_dist != 0:
                 self.go_to_side('box_front')
-                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale= 0.2)
+                util.move(AMCL_APPROACH_BOX, linear_scale= 0.2)
                 util.move(push_right_dist)
                 util.move(-1, linear_scale=0.3)
             
             if push_forward != 0:
                 self.go_to_side('box_right')
-                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX - 0.2, linear_scale=0.2)
                 util.move(push_forward)
                 util.move(-0.5, linear_scale= 0.3)
 
@@ -340,7 +341,7 @@ class PushBox(smach.State):
                     self.go_to_side('box_right')
                     util.move(-0.5, linear_scale= 0.3)
                 self.go_to_side('box_right')
-                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
                 util.move(push_left_dist)
         
         util.signal(2, onColor=Led.GREEN)
