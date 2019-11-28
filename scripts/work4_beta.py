@@ -50,7 +50,7 @@ BOX_EDGE_LENGTH = 0.334
 SQUARE_DIST = 0.825
 
 
-AMCL_APPROACH_BOX = 0.27
+AMCL_APPROACH_BOX = 0.33 
 
 BOX_TAG_ID = 6
 GOAL_TAG_ID = 30
@@ -151,14 +151,14 @@ class PushBox(smach.State):
             #util.signal(1, onColor=Led.BLACK) #debug
             util.rotate(-92)
             for i in range(abs(current_box_stall_id - self.goal_stall_id)):
-                if i == 0:
-                    push_dist = SQUARE_DIST * 2 - 0.5
+                if i == 0 and current_box_stall_id == 2:
+                    push_dist = SQUARE_DIST * 2 - BOX_EDGE_LENGTH/2 - ROBOT_LENGTH/2 - 0.1
                     util.move(push_dist, linear_scale=0.1)
                 else:
                     util.move(-0.6, linear_scale=0.3)
                     self.go_to_side('box_front')
 
-                    push_dist = SQUARE_DIST + AMCL_APPROACH_BOX + 0.17
+                    push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
                     util.move(push_dist, linear_scale= 0.2)
         else:
             point = PARK_SPOT_WAYPOINTS[str(int(current_box_stall_id)+1)][0]
@@ -178,7 +178,7 @@ class PushBox(smach.State):
                 if i == 0:
                     util.rotate(5)
 
-                push_dist = SQUARE_DIST + AMCL_APPROACH_BOX + 0.07
+                push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
                 util.move(push_dist, linear_scale= 0.2)
 
         if self.fine_tune(box_is_left, push_dist) == 'lost_box':
@@ -187,7 +187,6 @@ class PushBox(smach.State):
             self.client.wait_for_result()
             return 'restart'
         
-        #util.move(0.3, linear_scale= 0.3)
         ar_tag_sub.unregister()
         return 'completed'
   
@@ -277,7 +276,7 @@ class PushBox(smach.State):
 
         tmp_time = time.time()
         while self.box_tag_saw == False:
-            direction = 1 if box_is_left else -1
+            direction = -1 if box_is_left else 1
             twist = Twist()
             twist.angular.z = direction * 0.4
             self.twist_pub.publish(twist)
@@ -305,13 +304,13 @@ class PushBox(smach.State):
             print "fine_tune:", "push_right ", push_right_dist, "push_left", push_left_dist, "push_forward", push_forward
             if push_left_dist != 0:
                 self.go_to_side('box_front')
-                util.move(AMCL_APPROACH_BOX, linear_scale= 0.2)
+                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale= 0.2)
                 util.move(push_left_dist)
                 util.move(-1, linear_scale=0.3)
             
             if push_forward != 0:
                 self.go_to_side('box_left')
-                util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
                 util.move(push_forward)
                 util.move(-0.5, linear_scale= 0.3)
         
@@ -320,19 +319,19 @@ class PushBox(smach.State):
                     self.go_to_side('box_left')
                     util.move(-0.5, linear_scale= 0.3)
                 self.go_to_side('box_left')
-                util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
                 util.move(push_right_dist)
         else: # box is right to the goal, robot is left to the box
             print "fine_tune:", "push_right ", push_right_dist, "push_left", push_left_dist, "push_forward", push_forward
             if push_right_dist != 0:
                 self.go_to_side('box_front')
-                util.move(AMCL_APPROACH_BOX, linear_scale= 0.2)
+                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale= 0.2)
                 util.move(push_right_dist)
                 util.move(-1, linear_scale=0.3)
             
             if push_forward != 0:
                 self.go_to_side('box_right')
-                util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
                 util.move(push_forward)
                 util.move(-0.5, linear_scale= 0.3)
 
@@ -341,7 +340,7 @@ class PushBox(smach.State):
                     self.go_to_side('box_right')
                     util.move(-0.5, linear_scale= 0.3)
                 self.go_to_side('box_right')
-                util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
+                util.move(AMCL_APPROACH_BOX - 0.1, linear_scale=0.2)
                 util.move(push_left_dist)
         
         util.signal(2, onColor=Led.GREEN)
@@ -402,7 +401,7 @@ class SearchContour(smach.State):
                     if red_contours[0] == contour:
                         util.signal(1, onColor=Led.ORANGE)
                         util.signal(2, onColor=Led.ORANGE)
-                    return 'completed'
+                        return 'completed'
     
     def shape_cam_callback(self, msg):
         bridge = cv_bridge.CvBridge()
