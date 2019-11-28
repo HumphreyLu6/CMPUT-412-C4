@@ -31,7 +31,7 @@ from detectshapes import Contour
 from util import signal, rotate
 import util
 
-import work4
+import work4_beta as work4
 
 
 def approxEqual(a, b, tol = 0.001):
@@ -392,8 +392,10 @@ class SmCore:
             with sm_sub_work4:
                 smach.StateMachine.add('PushBox', work4.PushBox(),
                                         transitions={'completed':'SearchContour',
-                                                    'end':'end'
+                                                    'end':'end',
+                                                    'restart': 'PushBox'
                                                     })
+                                                
 
                 smach.StateMachine.add('SearchContour', work4.SearchContour(),
                                         transitions={'end':'end',
