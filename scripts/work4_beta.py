@@ -399,10 +399,12 @@ class SearchContour(smach.State):
                 _, red_contours = cd.getContours(self.hsv)
             
                 if len(red_contours) > 0:
-                    if red_contours[0] == contour:
+                    print red_contours, contour['shape_at_loc2']
+                    if contour['shape_at_loc2'] in red_contours:
                         util.signal(1, onColor=Led.ORANGE)
                         util.signal(2, onColor=Led.ORANGE)
                         return 'completed'
+            return 'completed'
     
     def shape_cam_callback(self, msg):
         bridge = cv_bridge.CvBridge()

@@ -89,7 +89,7 @@ class Follow(smach.State):
                 while time.time() - tmp_time < 1.6:
                     twist_pub.publish(current_twist)
                 twist_pub.publish(Twist())
-                userdata.contour = shape_at_loc2
+                userdata.contour = {"shape_at_loc2":shape_at_loc2}
                 return 'work4'
 
             return 'end'
