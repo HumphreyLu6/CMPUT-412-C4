@@ -35,8 +35,8 @@ PARK_SPOT_WAYPOINTS = {'1': [Point(1.951, 1.130, 0.010), Quaternion(0.0, 0.0, -0
 PARK_SPOT_WAYPOINTS = {'1': [Point(1.970, 1.130, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '2': [Point(1.990, 0.424, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '3': [Point(1.964, -0.439, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
-                       '4': [Point(1.977, -1.249, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
-                       '5': [Point(1.985, -2.025, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '4': [Point(2.000, -1.249, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '5': [Point(2.050, -2.025, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '6': [Point(0.573, -0.004, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
                        '7': [Point(0.586, -1.012, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
                        '8': [Point(1.011, -2.088, 0.010), Quaternion(0.0, 0.0, -0.689, 0.725)]}
@@ -50,7 +50,7 @@ BOX_EDGE_LENGTH = 0.334
 SQUARE_DIST = 0.825
 
 
-AMCL_APPROACH_BOX = 0.31
+AMCL_APPROACH_BOX = 0.28
 
 BOX_TAG_ID = 6
 GOAL_TAG_ID = 20
@@ -142,6 +142,13 @@ class PushBox(smach.State):
             box_is_left = False
 
         if box_is_left:
+            if current_box_stall_id == 2:
+                point = PARK_SPOT_WAYPOINTS['6'][0]
+                quaternion = PARK_SPOT_WAYPOINTS['6'][1]
+                goal_pose = util.goal_pose('map', point, quaternion)
+                self.client.send_goal(goal_pose)
+                print "waiting for result ", goal_pose.target_pose.header.frame_id
+                self.client.wait_for_result()
             point = PARK_SPOT_WAYPOINTS[str(current_box_stall_id-1)][0]
             quaternion = PARK_SPOT_WAYPOINTS[str(current_box_stall_id-1)][1]
             goal_pose = util.goal_pose('map', point, quaternion)
@@ -159,7 +166,7 @@ class PushBox(smach.State):
                     self.go_to_side('box_front')
                     # util.move(AMCL_APPROACH_BOX)
                     # rospy.sleep(1)
-                    push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
+                    push_dist = SQUARE_DIST + AMCL_APPROACH_BOX - 0.05
                     util.move(push_dist, linear_scale= 0.2)
         else:
             point = PARK_SPOT_WAYPOINTS[str(int(current_box_stall_id)+1)][0]
@@ -172,14 +179,14 @@ class PushBox(smach.State):
             util.rotate(90)
             for i in range(abs(current_box_stall_id - self.goal_stall_id)):
                 if i == 0:
-                    util.move(-0.2, linear_scale=0.3)
+                    util.move(-0.3, linear_scale=0.3)
                 else:
                     util.move(-0.6, linear_scale=0.3)
                 self.go_to_side('box_front')
                 if i == 0:
-                    util.rotate(5)
+                    util.rotate(6, max_error=2, anglular_scale=0.5)
 
-                push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
+                push_dist = SQUARE_DIST + AMCL_APPROACH_BOX - 0.07
                 util.move(push_dist, linear_scale= 0.2)
 
         # if self.fine_tune(box_is_left, push_dist) == 'lost_box':
@@ -187,6 +194,7 @@ class PushBox(smach.State):
         #     self.client.send_goal(goal_pose)
         #     self.client.wait_for_result()
         #     return 'restart'
+        util.signal(2, onColor = Led.GREEN, onColor2=Led.RED)
         util.move(-0.2)
         ar_tag_sub.unregister()
         return 'completed'
@@ -197,6 +205,7 @@ class PushBox(smach.State):
                 if self.box_tag_id == None:
                     self.box_tag_id = marker.id
                     util.signal(quantity=1, onColor=Led.RED)
+                    rospy.sleep(0.5)
 
                 self.box_tag_saw = True
             else:
@@ -344,8 +353,6 @@ class PushBox(smach.State):
                 util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
                 util.move(push_left_dist)
 
-        util.signal(2, onColor=Led.GREEN)
-
 
     def set_init_map_pose(self):
         #referenced from https://www.cnblogs.com/kuangxionghui/p/8335853.html
@@ -402,7 +409,8 @@ class SearchContour(smach.State):
                     print red_contours, contour['shape_at_loc2']
                     if contour['shape_at_loc2'] in red_contours:
                         util.signal(1, onColor=Led.ORANGE)
-                        util.signal(2, onColor=Led.ORANGE)
+                        rospy.sleep(1)
+                        util.signal(2, onColor=Led.ORANGE, onColor2=Led.GREEN)
                         return 'completed'
             return 'completed'
 
@@ -446,7 +454,7 @@ if __name__ == "__main__":
     rospy.init_node("work4_test")
 
     sm = smach.StateMachine(outcomes=['end', 'returned'])
-    sm.userdata.contour = detectshapes.Contour.Triangle
+    sm.userdata.contour = {"shape_at_loc2": detectshapes.Contour.Triangle}
 
     with sm:
         smach.StateMachine.add('PushBox', PushBox(),

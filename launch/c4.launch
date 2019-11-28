@@ -12,8 +12,9 @@
     <param name="/move_base/oscillation_timeout" value="10.0"/>
     <param name="/move_base/oscillation_distance" value="0.2"/>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
+        <arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c4/map.yaml"/>
         <!-- <arg name="map_file" value = "/home/robot/catkin_ws/src/CMPUT-412-C3/map.yaml"/> -->
-        <arg name="map_file" value = "/home/robot/catkin_ws/src/CMPUT-412-C4/map.yaml"/>
+        <!-- <arg name="map_file" value = "/home/robot/catkin_ws/src/CMPUT-412-C4/map.yaml"/> -->
     </include>
 
     <!-- <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/> -->
