@@ -86,7 +86,7 @@ class Follow(smach.State):
                 twist_pub.publish(Twist())
                 rotate(-35)
                 tmp_time = time.time()
-                while time.time() - tmp_time < 1.6:
+                while time.time() - tmp_time < 1.8:
                     twist_pub.publish(current_twist)
                 twist_pub.publish(Twist())
                 userdata.contour = {"shape_at_loc2":shape_at_loc2}
@@ -513,6 +513,7 @@ class SmCore:
         begin = time.time()
         outcome = self.sm.execute()
         if outcome == 'end':
+            util.signal(2)
             print 'time used:', time.time() - begin
         rospy.spin()
         self.sis.stop()
