@@ -2,12 +2,12 @@
     <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
     <include file="$(find turtlebot_teleop)/launch/logitech.launch"/>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-        <arg name="map_file" value = "/home/hzhang/map.yaml"/>
-        <!--arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c3/map.yaml"/-->
+        <!-- <arg name="map_file" value = "/home/hzhang/map.yaml"/> -->
+        <arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c4/map.yaml"/>
     </include>
     <param name="/move_base/global_costmap/inflation_layer/inflation_radius" value="0.07"/>
     <param name="/move_base/local_costmap/inflation_layer/inflation_radius" value="0.07"/>
     <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/>
 
-    <node pkg="c3" name="c3" type="waypoint_test.py" output="screen"/>
+    <node pkg="c4" name="c4" type="waypoint_test.py" output="screen"/>
 </launch>

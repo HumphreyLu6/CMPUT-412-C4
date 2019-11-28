@@ -11,23 +11,19 @@ from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, Point, Quaternio
 import cv2, cv_bridge
 import tf
 
-SEARCH_WAYPOINTS = {'1': [Point(-0.822, -0.009, 0.010), Quaternion(0, 0, 0.118, 0.993)],
-                    '2': [Point(-1.313,  1.434, 0.010), Quaternion(0, 0, 0.127, 0.992)]}
 
-PARK_SPOT_WAYPOINTS = {'1': [Point(-0.803,  2.353, 0.010), Quaternion(0, 0,  0.105,  0.994)],
-                       '2': [Point(-0.608,  1.657, 0.010), Quaternion(0, 0,  0.134,  0.991)],
-                       '3': [Point(-0.401,  0.869, 0.010), Quaternion(0, 0,  0.124,  0.992)],
-                       '4': [Point(-0.291,  0.079, 0.010), Quaternion(0, 0,  0.106,  0.994)],
-                       '5': [Point(-0.169, -0.719, 0.010), Quaternion(0, 0,  0.092,  0.996)],
-                       '6': [Point(-1.922,  1.029, 0.010), Quaternion(0, 0,  0.997, -0.080)],
-                       '7': [Point(-1.694,  0.291, 0.010), Quaternion(0, 0,  0.992, -0.123)],
-                       '8': [Point(-1.077, -0.846, 0.010), Quaternion(0, 0, -0.621,  0.784)]}
+PARK_SPOT_WAYPOINTS = {'1': [Point(1.951, 1.130, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '2': [Point(1.925, 0.324, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '3': [Point(1.854, -0.439, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '4': [Point(1.907, -1.249, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '5': [Point(1.975, -2.025, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '6': [Point(0.573, -0.054, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
+                       '7': [Point(1.011, -2.088, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
+                       '8': [Point(-0.310, 1.022, 0.010), Quaternion(0.0, 0.0, -0.689, 0.725)]}
 
-OFF_RAMP_WAYPOINT = [(-1.895, -0.507, 0.010), (0.000, 0.000, 0.326, 0.945)] #start
+OFF_RAMP_WAYPOINT = [Point(0.067, -1.550, 0.010), Quaternion(0.0, 0.0, 0.195, 0.981)] #start
 
-
-ON_RAMP_WAYPOINT = [(-2.901, 1.809, 0.010), (0.000, 0.000, 0.960, -0.281)] #end
-#ON_RAMP_WAYPOINT = [(-2.961, 1.680, 0.010), (0.000, 0.000, 0.960, -0.281)] #end
+ON_RAMP_WAYPOINT = [Point(-0.310, 1.022, 0.010), Quaternion(0.0, 0.0, 0.994, -0.111)] #end
 
 class PushBox(smach.State):
     def __init__(self):
@@ -56,13 +52,15 @@ class PushBox(smach.State):
                 return 'end'
             if self.box_tag_id != None and self.goal_tag_id != None:
                 break
-            if time.time() - tmp_time > 3:
-                goal_pose = util.goal_pose('map', SEARCH_WAYPOINTS['2'][0], SEARCH_WAYPOINTS['2'][1])
+            twist = Twist()
+            twist.angular.z = - 0.2
+            twist_pub.publish(twist)
+
+            if time.time() - tmp_time > 5:
+                goal_pose = util.goal_pose('map', PARK_SPOT_WAYPOINTS['6'][0], PARK_SPOT_WAYPOINTS['6'][1])
                 self.client.send_goal(goal_pose)
                 self.client.wait_for_result()
-            twist = Twist()
-            twist.angular.z = 0.1
-            twist_pub.publish(twist)
+                util.rotate(87)
             
         while True:
             if rospy.is_shutdown():
@@ -90,15 +88,6 @@ class PushBox(smach.State):
         
         
         print get_cloest_stall(self.goal_waypoint.target_pose.pose.position)
-        
-        # self.client.send_goal(self.goal_waypoint)
-        # goal_pose = util.goal_pose('map', PARK_SPOT_WAYPOINTS['7'][0], PARK_SPOT_WAYPOINTS['7'][1])
-        # self.client.send_goal(goal_pose)
-        # self.client.wait_for_result()
-        # util.signal(3)
-        # self.client.send_goal(self.box_waypoint)
-        # self.client.wait_for_result()
-        # util.signal(1)
 
         assert self.box_waypoint != None and self.goal_waypoint != None
 
@@ -120,7 +109,7 @@ class PushBox(smach.State):
             self.client.wait_for_result()
             util.signal(1, onColor=Led.BLACK) #debug
             util.rotate(-87)
-            push_dist = abs( int(self.box_stall_id)- int(self.goal_stall_id) + 1) * square_dist
+            push_dist = (abs( int(self.box_stall_id)- int(self.goal_stall_id)) + 1) * square_dist - 0.4
             util.move(push_dist)
             util.signal(2, onColor=Led.GREEN)
             util.rotate(87)
@@ -157,14 +146,8 @@ class PushBox(smach.State):
         p = PoseWithCovarianceStamped()
         p.header.stamp = rospy.Time.now()
         p.header.frame_id = "map"
-        p.pose.pose.position.x = OFF_RAMP_WAYPOINT[0][0]
-        p.pose.pose.position.y = OFF_RAMP_WAYPOINT[0][1]
-        p.pose.pose.position.z = OFF_RAMP_WAYPOINT[0][2]
-
-        p.pose.pose.orientation.x = OFF_RAMP_WAYPOINT[1][0]
-        p.pose.pose.orientation.y = OFF_RAMP_WAYPOINT[1][1]
-        p.pose.pose.orientation.z = OFF_RAMP_WAYPOINT[1][2]
-        p.pose.pose.orientation.w = OFF_RAMP_WAYPOINT[1][3]
+        p.pose.pose.position = OFF_RAMP_WAYPOINT[0]
+        p.pose.pose.orientation = OFF_RAMP_WAYPOINT[1]
 
         p.pose.covariance[6 * 0 + 0] = 0.5 * 0.5
         p.pose.covariance[6 * 1 + 1] = 0.5 * 0.5
@@ -188,7 +171,7 @@ class SearchContour(smach.State):
             return 'end'
         else:
             contour = userdata.SearchContour_in_contour
-            assert isinstance(contour) == detectshapes.Contour
+            assert isinstance(contour, detectshapes.Contour)
 
             cd = detectshapes.ContourDetector()
             image_sub = rospy.Subscriber("camera/rgb/image_raw", Image, self.shape_cam_callback)
