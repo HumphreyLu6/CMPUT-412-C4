@@ -33,8 +33,8 @@ PARK_SPOT_WAYPOINTS = {'1': [Point(1.951, 1.130, 0.010), Quaternion(0.0, 0.0, -0
 
 # Hum Thu version
 PARK_SPOT_WAYPOINTS = {'1': [Point(1.970, 1.130, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
-                       '2': [Point(1.951, 0.324, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
-                       '3': [Point(1.954, -0.439, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '2': [Point(1.990, 0.424, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
+                       '3': [Point(1.964, -0.439, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '4': [Point(1.977, -1.249, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '5': [Point(1.985, -2.025, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '6': [Point(0.573, -0.004, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
@@ -45,12 +45,12 @@ OFF_RAMP_WAYPOINT = [Point(0.067, -1.550, 0.010), Quaternion(0.0, 0.0, 0.195, 0.
 
 ON_RAMP_WAYPOINT = [Point(-0.310, 1.022, 0.010), Quaternion(0.0, 0.0, 0.994, -0.111)] #end
 
-ROBOT_LENGTH = 0.35 #with bumper
+ROBOT_LENGTH = 0.365 #with bumper
 BOX_EDGE_LENGTH = 0.334
 SQUARE_DIST = 0.825
 
 
-AMCL_APPROACH_BOX = 0.2
+AMCL_APPROACH_BOX = 0.27
 
 BOX_TAG_ID = 6
 GOAL_TAG_ID = 30
@@ -142,7 +142,6 @@ class PushBox(smach.State):
             box_is_left = False
 
         if box_is_left:
-
             point = PARK_SPOT_WAYPOINTS[str(current_box_stall_id-1)][0]
             quaternion = PARK_SPOT_WAYPOINTS[str(current_box_stall_id-1)][1]
             goal_pose = util.goal_pose('map', point, quaternion)
@@ -153,12 +152,13 @@ class PushBox(smach.State):
             util.rotate(-92)
             for i in range(abs(current_box_stall_id - self.goal_stall_id)):
                 if i == 0:
-                    util.move(SQUARE_DIST * 2 - 0.4, linear_scale=0.1)
+                    push_dist = SQUARE_DIST * 2 - 0.5
+                    util.move(push_dist, linear_scale=0.1)
                 else:
                     util.move(-0.6, linear_scale=0.3)
                     self.go_to_side('box_front')
 
-                    push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
+                    push_dist = SQUARE_DIST + AMCL_APPROACH_BOX + 0.17
                     util.move(push_dist, linear_scale= 0.2)
         else:
             point = PARK_SPOT_WAYPOINTS[str(int(current_box_stall_id)+1)][0]
@@ -175,8 +175,10 @@ class PushBox(smach.State):
                 else:
                     util.move(-0.6, linear_scale=0.3)
                 self.go_to_side('box_front')
+                if i == 0:
+                    util.rotate(5)
 
-                push_dist = SQUARE_DIST + AMCL_APPROACH_BOX
+                push_dist = SQUARE_DIST + AMCL_APPROACH_BOX + 0.07
                 util.move(push_dist, linear_scale= 0.2)
 
         if self.fine_tune(box_is_left, push_dist) == 'lost_box':
@@ -284,7 +286,7 @@ class PushBox(smach.State):
         self.twist_pub.publish(Twist())
         
         box_middle_point, _ = self.look_up_box('box_middle', 'map')
-        #print box_middle_point, PARK_SPOT_WAYPOINTS[str(self.goal_stall_id)][0]
+        print box_middle_point, PARK_SPOT_WAYPOINTS[str(self.goal_stall_id)][0]
         error_x =  box_middle_point.x - PARK_SPOT_WAYPOINTS[str(self.goal_stall_id)][0].x
         if self.goal_stall_id == 1:
             error_x += 0.3
