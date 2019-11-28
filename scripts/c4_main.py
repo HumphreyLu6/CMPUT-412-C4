@@ -398,7 +398,7 @@ class SmCore:
                                                     'end':'end',
                                                     'restart': 'PushBox'
                                                     })
-                                                
+
 
                 smach.StateMachine.add('SearchContour', work4.SearchContour(),
                                         transitions={'end':'end',

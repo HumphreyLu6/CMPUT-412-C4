@@ -50,7 +50,7 @@ BOX_EDGE_LENGTH = 0.334
 SQUARE_DIST = 0.825
 
 
-AMCL_APPROACH_BOX = 0.31 
+AMCL_APPROACH_BOX = 0.31
 
 BOX_TAG_ID = 6
 GOAL_TAG_ID = 20
@@ -89,7 +89,7 @@ class PushBox(smach.State):
         self.trial += 1
         print "trial: ", self.trial
         if self.trial > 2:
-            goal_pose = util.goal_pose('map', ON_RAMP_WAYPOINT[0], ON_RAMP_WAYPOINT[1]) 
+            goal_pose = util.goal_pose('map', ON_RAMP_WAYPOINT[0], ON_RAMP_WAYPOINT[1])
             self.client.send_goal(goal_pose)
             self.client.wait_for_result()
             return 'completed'
@@ -112,7 +112,7 @@ class PushBox(smach.State):
                     current_box_stall_id= get_cloest_stall(box_tag_point)
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                     print "TF look up exception when look up goal tag"
-                
+
 
                 if current_box_stall_id != None and self.goal_stall_id != None:
                     assert current_box_stall_id > 1 and current_box_stall_id < 5, \
@@ -130,7 +130,7 @@ class PushBox(smach.State):
                 self.client.send_goal(goal_pose)
                 print "waiting for result ", goal_pose.target_pose.header.frame_id
                 self.client.wait_for_result()
-            
+
             if time.time() - tmp_time > 20:
                 goal_pose = util.goal_pose('map', PARK_SPOT_WAYPOINTS['7'][0], Quaternion(0,0,0,1))
                 self.client.send_goal(goal_pose)
@@ -187,17 +187,17 @@ class PushBox(smach.State):
         #     self.client.send_goal(goal_pose)
         #     self.client.wait_for_result()
         #     return 'restart'
-        
+        util.move(-0.2)
         ar_tag_sub.unregister()
         return 'completed'
-  
+
     def ar_tag_sub_callback(self, msg):
         for marker in msg.markers:
             if marker.id == BOX_TAG_ID:
                 if self.box_tag_id == None:
                     self.box_tag_id = marker.id
                     util.signal(quantity=1, onColor=Led.RED)
-                
+
                 self.box_tag_saw = True
             else:
                 self.box_tag_saw = False
@@ -213,7 +213,7 @@ class PushBox(smach.State):
                         self.goal_stall_id = get_cloest_stall(goal_tag_point)
                     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                         print "TF look up exception when look up goal tag"
-    
+
     def go_to_side(self, side):
         while True:
             self.br.sendTransform(
@@ -223,7 +223,7 @@ class PushBox(smach.State):
                 "box_middle",
                 "ar_marker_" + str(BOX_TAG_ID),
             )
-        
+
             self.br.sendTransform(
                 BOX_SIDES[side][0],
                 BOX_SIDES[side][1],
@@ -243,7 +243,7 @@ class PushBox(smach.State):
                 print "TF look up exception when look up goal tag"
             else:
                 break
-    
+
     def look_up_box(self, child_frame, parent_frame):
         self.br.sendTransform(
             BOX_MIDDLE_OFFSET_FROM_TAG,
@@ -252,7 +252,7 @@ class PushBox(smach.State):
             "box_middle",
             "ar_marker_" + str(BOX_TAG_ID),
         )
-    
+
         for key in BOX_SIDES:
             self.br.sendTransform(
                 BOX_SIDES[key][0],
@@ -268,7 +268,7 @@ class PushBox(smach.State):
                 return Point(trans[0],trans[1],trans[2]), Quaternion(rots[0],rots[1],rots[2],rots[3])
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 print "TF look up exception when look up goal tag"
-    
+
     def fine_tune(self, box_is_left, ori_push_dist):
         if ori_push_dist > SQUARE_DIST * 2:
             ori_push_dist = SQUARE_DIST * 2
@@ -284,7 +284,7 @@ class PushBox(smach.State):
             if time.time() - tmp_time > 15:
                 return 'lost_box'
         self.twist_pub.publish(Twist())
-        
+
         box_middle_point, _ = self.look_up_box('box_middle', 'map')
         print box_middle_point, PARK_SPOT_WAYPOINTS[str(self.goal_stall_id)][0]
         error_x =  box_middle_point.x - PARK_SPOT_WAYPOINTS[str(self.goal_stall_id)][0].x
@@ -308,13 +308,13 @@ class PushBox(smach.State):
                 util.move(AMCL_APPROACH_BOX, linear_scale= 0.2)
                 util.move(push_left_dist)
                 util.move(-1, linear_scale=0.3)
-            
+
             if push_forward != 0:
                 self.go_to_side('box_left')
                 util.move(AMCL_APPROACH_BOX - 0.2, linear_scale=0.2)
                 util.move(push_forward)
                 util.move(-0.5, linear_scale= 0.3)
-        
+
             if push_right_dist != 0:
                 if push_forward == 0:
                     self.go_to_side('box_left')
@@ -329,7 +329,7 @@ class PushBox(smach.State):
                 util.move(AMCL_APPROACH_BOX, linear_scale= 0.2)
                 util.move(push_right_dist)
                 util.move(-1, linear_scale=0.3)
-            
+
             if push_forward != 0:
                 self.go_to_side('box_right')
                 util.move(AMCL_APPROACH_BOX - 0.2, linear_scale=0.2)
@@ -343,7 +343,7 @@ class PushBox(smach.State):
                 self.go_to_side('box_right')
                 util.move(AMCL_APPROACH_BOX, linear_scale=0.2)
                 util.move(push_left_dist)
-        
+
         util.signal(2, onColor=Led.GREEN)
 
 
@@ -364,7 +364,7 @@ class PushBox(smach.State):
 
         init_pose_pub.publish(p)
         rospy.sleep(3)
-            
+
 class SearchContour(smach.State):
     def __init__(self):
         smach.State.__init__(self,
@@ -380,7 +380,7 @@ class SearchContour(smach.State):
             return 'end'
         else:
             contour = userdata.SearchContour_in_contour
-            print "Looking for contour ", contour 
+            print "Looking for contour ", contour
 
             cd = detectshapes.ContourDetector()
             image_sub = rospy.Subscriber("camera/rgb/image_raw", Image, self.shape_cam_callback)
@@ -388,7 +388,7 @@ class SearchContour(smach.State):
             rospy.wait_for_message("camera/rgb/image_raw", Image)
 
             for stall_id in ['6', '7', '8']:
-                goal_pose = util.goal_pose('map', 
+                goal_pose = util.goal_pose('map',
                             point=PARK_SPOT_WAYPOINTS[stall_id][0],
                             quaternion=PARK_SPOT_WAYPOINTS[stall_id][1])
                 self.client.send_goal(goal_pose)
@@ -397,7 +397,7 @@ class SearchContour(smach.State):
                 while self.hsv == None:
                     pass
                 _, red_contours = cd.getContours(self.hsv)
-            
+
                 if len(red_contours) > 0:
                     print red_contours, contour['shape_at_loc2']
                     if contour['shape_at_loc2'] in red_contours:
@@ -405,13 +405,13 @@ class SearchContour(smach.State):
                         util.signal(2, onColor=Led.ORANGE)
                         return 'completed'
             return 'completed'
-    
+
     def shape_cam_callback(self, msg):
         bridge = cv_bridge.CvBridge()
         image = bridge.imgmsg_to_cv2(msg, desired_encoding = 'bgr8')
         self.hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    
-    
+
+
 class ON_RAMP(smach.State):
     def __init__(self):
         smach.State.__init__(self,
