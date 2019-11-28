@@ -86,7 +86,7 @@ class Follow(smach.State):
                 twist_pub.publish(Twist())
                 rotate(-35)
                 tmp_time = time.time()
-                while time.time() - tmp_time < 2:
+                while time.time() - tmp_time < 1.6:
                     twist_pub.publish(current_twist)
                 twist_pub.publish(Twist())
                 userdata.contour = shape_at_loc2
@@ -120,8 +120,10 @@ class Rotate(smach.State):
         )
 
     def execute(self, userdata):
-        global turn, work, current_work, twist_pub, on_additional_line
+        global turn, work, current_work, twist_pub, on_additional_line, task3_finished
         #rotate(userdata.rotate_turns_in * 90, anglular_scale=1.0)
+        if task3_finished:
+            return 'end'
         rotate(userdata.rotate_turns_in * 85, anglular_scale=1.0)
         turn = False
         if work:
@@ -526,10 +528,10 @@ current_work = 1
 on_additional_line = False
 white_mask = None
 red_mask = None
-task3_finished = False
 image_width = 0
 unmarked_spot_id = None
 work4_returned = False
+task3_finished = False
 rospy.init_node('c2_main')
 
 twist_pub = rospy.Publisher("/cmd_vel_mux/input/teleop", Twist, queue_size=1)
