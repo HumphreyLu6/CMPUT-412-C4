@@ -13,7 +13,7 @@
     <arg name="cam_info_topic" default="/camera/rgb/camera_info" />
     <arg name="output_frame" default="/map" />
 
-    <node name="work4" pkg="c4" type="work4_belta.py" output="screen"/>
+    <node name="work4" pkg="c4" type="work4_beta.py" output="screen"/>
 
     <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
         <param name="marker_size"           type="double" value="$(arg marker_size)" />
