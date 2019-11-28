@@ -329,6 +329,7 @@ class Work3(smach.State):
                 if red_contours1[0] == shape_at_loc2:
                     print "Matched: ", red_contours1[0]
                     signal(1)
+                    util.rotate(-87)
                     task3_finished = True
                 break
             time.sleep(0.5)
