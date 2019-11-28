@@ -122,8 +122,8 @@ class Rotate(smach.State):
     def execute(self, userdata):
         global turn, work, current_work, twist_pub, on_additional_line, task3_finished
         #rotate(userdata.rotate_turns_in * 90, anglular_scale=1.0)
-        if task3_finished:
-            return 'end'
+        # if task3_finished:
+        #     return 'end'
         rotate(userdata.rotate_turns_in * 85, anglular_scale=1.0)
         turn = False
         if work:
@@ -329,7 +329,6 @@ class Work3(smach.State):
                 if red_contours1[0] == shape_at_loc2:
                     print "Matched: ", red_contours1[0]
                     signal(1)
-                    util.rotate(-87)
                     task3_finished = True
                 break
             time.sleep(0.5)
