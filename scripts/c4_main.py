@@ -86,7 +86,7 @@ class Follow(smach.State):
                 twist_pub.publish(Twist())
                 rotate(-35)
                 tmp_time = time.time()
-                while time.time() - tmp_time < 1.8:
+                while time.time() - tmp_time < 1.6:
                     twist_pub.publish(current_twist)
                 twist_pub.publish(Twist())
                 userdata.contour = {"shape_at_loc2":shape_at_loc2}

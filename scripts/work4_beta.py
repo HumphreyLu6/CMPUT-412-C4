@@ -38,7 +38,7 @@ PARK_SPOT_WAYPOINTS = {'1': [Point(1.970, 1.130, 0.010), Quaternion(0.0, 0.0, 0.
                        '4': [Point(2.000, -1.249, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '5': [Point(2.050, -2.025, 0.010), Quaternion(0.0, 0.0, 0.0, 1.0)],
                        '6': [Point(0.573, -0.004, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
-                       '7': [Point(0.586, -1.012, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
+                       '7': [Point(0.686, -0.952, 0.010), Quaternion(0.0, 0.0, 1.0, 0.0)],
                        '8': [Point(1.011, -2.088, 0.010), Quaternion(0.0, 0.0, -0.689, 0.725)]}
 
 OFF_RAMP_WAYPOINT = [Point(0.067, -1.550, 0.010), Quaternion(0.0, 0.0, 0.195, 0.981)] #start
@@ -52,7 +52,7 @@ SQUARE_DIST = 0.825
 
 AMCL_APPROACH_BOX = 0.28
 
-BOX_TAG_ID = 6
+BOX_TAG_ID = 2
 GOAL_TAG_ID = 20
 
 BOX_SIDE_OFFSET_FORM_MIDDLE = 0.5
