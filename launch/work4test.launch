@@ -1,8 +1,16 @@
 <launch>
     <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
     <!--include file="$(find turtlebot_bringup)/launch/3dsensor.launch"/-->
-    <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-        <arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c4/map.yaml"/>
+    <include file="$(find c4)/launch/amcl.launch">
+        <arg name="map_file" value = "/home/hzhang/map.yaml"/>
+        <!-- <arg name="map_file" value = "/home/robot/catkin_ws/src/CMPUT-412-C3/map.yaml"/> -->
+        <!-- <arg name="map_file" value = "/home/robot/catkin_ws/src/CMPUT-412-C4/map.yaml"/> -->
+        <param file="$(find c4)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <param file="$(find c4)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <param file="$(find c4)/param/global_costmap_params.yaml" command="load" />
+        <param file="$(find c4)/param/local_costmap_params.yaml" command="load" />
+        <param file="$(find c4)/param/dwa_local_planner_params.yaml" command="load" />
+        <param file="$(find c4)/param/move_base_params.yaml" command="load" />
     </include>
     <!-- <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/> -->
     

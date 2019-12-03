@@ -3,18 +3,16 @@
     <!-- <include file="$(find turtlebot_bringup)/launch/3dsensor.launch"/> -->
 
     <include file="$(find turtlebot_teleop)/launch/logitech.launch"/>
-    <param name="/move_base/global_costmap/inflation_layer/inflation_radius" value="0.07"/>
-    <param name="/move_base/local_costmap/inflation_layer/inflation_radius" value="0.07"/>
-    <param name="/move_base/controller_frequency" value="5.0"/>
-    <param name="/move_base/controller_patience" value="3.0"/>
-    <param name="/move_base/planner_frequency" value="1.0"/>
-    <param name="/move_base/planner_patience" value="5.0"/>
-    <param name="/move_base/oscillation_timeout" value="10.0"/>
-    <param name="/move_base/oscillation_distance" value="0.2"/>
-    <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-        <arg name="map_file" value = "/home/humphrey/Documents/catkin_ws/src/c4/map.yaml"/>
+    <include file="$(find c4)/launch/amcl.launch">
+        <arg name="map_file" value = "/home/hzhang/map.yaml"/>
         <!-- <arg name="map_file" value = "/home/robot/catkin_ws/src/CMPUT-412-C3/map.yaml"/> -->
         <!-- <arg name="map_file" value = "/home/robot/catkin_ws/src/CMPUT-412-C4/map.yaml"/> -->
+        <param file="$(find c4)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <param file="$(find c4)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <param file="$(find c4)/param/global_costmap_params.yaml" command="load" />
+        <param file="$(find c4)/param/local_costmap_params.yaml" command="load" />
+        <param file="$(find c4)/param/dwa_local_planner_params.yaml" command="load" />
+        <param file="$(find c4)/param/move_base_params.yaml" command="load" />
     </include>
 
     <!-- <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/> -->
