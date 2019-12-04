@@ -2,10 +2,10 @@
 
 ## ***Overview***
 
-This repo is the competition 3 implementations of group 3, and it is built upon  
-[https://github.com/HumphreyLu6/CMPUT-412-C3]  
-[https://github.com/TianqiCS/CMPUT412-C2]  
-[https://github.com/TianqiCS/CMPUT412-C1]  
+This repo is the competition 3 implementations of group 3, and it is built upon
+[https://github.com/HumphreyLu6/CMPUT-412-C3]
+[https://github.com/TianqiCS/CMPUT412-C2]
+[https://github.com/TianqiCS/CMPUT412-C1]
 
 ## ***Competiiton Objectives***
 
@@ -91,7 +91,7 @@ Create or navigate the existing catkin workspace and clone our repository.
 
 - Box Pushing:
     - Primarily, we wanted to push the box directly towards the goal without break, and then fine-tune the position of the box by detecting if there are significant position differences between the box center and goal.
-    - After a few experiments, we found that when the initial position of the box center is far away from goal (2, 3 squares in between), the robot easily lost the box during pushing the box, and sometimes the box is pushed against the wall. The errors of AMCL navigation is magnified by pushing the box. So we decided to push a short distance at one time. 
+    - After a few experiments, we found that when the initial position of the box center is far away from goal (2, 3 squares in between), the robot easily lost the box during pushing the box, and sometimes the box is pushed against the wall. The errors of AMCL navigation is magnified by pushing the box. So we decided to push a short distance at one time.
     - The basic steps are 1. Using AMCL navigation to approach the box,  2. pushing forward, 3.backing up, 4. Going back to 1, repeat until the goal is reached. The fine-tuning step is being abandoned since it always "over" pushes the box.
 
 - Shape detection:
@@ -129,10 +129,13 @@ searching strategy:
         - 4. In the Rotate state, the robot will determine what kind of work it will do based on current value.
         - 5. For the task to count number of white tubes, the robot will detect how many red contours are in the front and indicate the number by Led lights and sound.
         - 6. For the task at location 2, the robot will detect how many red/green contours are in the front and indicate the total number by Led lights and sound, the robot will remember what shape the green contour is in location2.
-        - 7. The robot goes 'off ramp' to dock at three locations, one has a the AR tag in the front, one has a contour with same shape in location 2 in the front, one has the index specified in the biginning of the game. The robot will parks in the center of the each square/location.
-        - 9. After the robot finishs all parking task it will go to the 'on ramp' point and continue the 'lcoation 3' task, which is find the matching shape at location 2.
-        - 10. The robot will go through all the shapes when selecting the shapes. If it found the right one it will make a turn on a light and make a sound.
-        - 11. The run is ended when the robot is back to the starting line
+        - 7. When the robot goes to 'off-ramp' spot, it will firstly try to identify the location of the AR tag and the box. Then it will calculate the relative distance base on the data it gets. If the AR tag or the box is too far away to be found, it will drive to position 6 and 7 and try to get the AR tags.
+        - 8. After the tags have been successfully found, the robot will find out the rotation of the box and try to push the box from sideways. The robot also will keep the distance to make sure the box is in right rotation before pushing the box since the razer scan can hardly find where the box is when pushin the box(the distance between box and the camera is below the minimal distance the camera can scan)
+        - 9. For each square the robot push, it will pause a little and step back to make sure the box is in the right rotation and it is pushing the box in the right way.
+        - 10. After the box has been push to the right parking spot which is right in front of the AR tag, the robot will find a way to postition 6,7 and 8 to find out if the shape it saw in location 2 is among the three tags.
+        - 11. After the robot finishs all box pushing tasks it will go to the 'on-ramp' point and continue the 'lcoation 3' task, which is find the matching shape at location 2.
+        - 12. The robot will go through all the shapes when selecting the shapes. If it found the right one it will make a turn on a light and make a sound.
+        - 13. The run is ended when the robot is back to the starting line
 
 ![Fig1](smach.png)
 
