@@ -17,33 +17,45 @@ In general, the robot needs to follow a track and do different specific tasks at
 
 <p align = "center">
     <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/course.png" width="80%" height="80%">
+    <br>
+    <em>Fig. 1: Course</em>
 </p>
 
 - ***Location 1*** is the first location maked by a short red line. Certain number (1~3) of objects are placed 90 degrees counterclockwise from the line. The robot needs to count the number of objects without leaving the track.
 <p align = "center">
-<img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location1.png" width="40%" height="40%">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location1.png" width="40%" height="40%">
+    <br>
+    <em>Fig. 2: Location 1</em>
 </p>
 
 - ***Location 2*** is the second location, which located in the end of an additional track which branched off at a short red line. A white board with certain number(1~3) of shapes is placed at location 2, one of the shape is in green and others are in red. The robot needs to count the number of shapes and detect what shape the the green shape is.
 
 <p align = "center">
-<img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location2.png" width="40%" height="40%">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location2.png" width="40%" height="40%"> 
+    <br>
+    <em>Fig. 3: Location 2</em>
 </p>
 
 - ***Location 4*** is the third location led by a off ramp track. 8 parking stalls are located on the floor which are represented by red squares. A box with AR tags are placed in one of the 2, 3, 4 stalls, and a different AR tag that indicates goal stall is placed in one of remaining stalls(against the wall), the red shapes are placed at spot 6, 7 and 8. The robot need to push the box into the AR tag marked stall and park inside of the stall which has the same shape as the green shape from location 2. After finishing parking at three spots, the robot needs to find the on ramp location and keep following the track.
 
 <p align = "center">
 <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location4.png" width="40%" height="40%">
+    <br>
+    <em>Fig. 4: Location 4</em>
 </p>
 
 <p align = "center">
     <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Box.png" width="40%" height="40%">
+    <br>
+    <em>Fig. 5: Location 4 Box</em>
 </p>
 
 - ***Location 3*** is the last location which is marked by three half red lines, each red line indicated there is a shape located counterclockwise from the track, the robot needs to find the one with same shape as the green shape at location 2.
 
 <p align = "center">
-<img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location3.png" width="40%" height="40%">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location3.png" width="40%" height="40%">
+    <br>
+    <em>Fig. 6: Location 3</em>
 </p>
 
 ## _**Pre-requisites**_
@@ -57,6 +69,8 @@ In general, the robot needs to follow a track and do different specific tasks at
     
 <p align = "center">
     <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Robot.jpg" width="40%" height="40%">
+    <br>
+    <em>Fig. 7: Robot</em>
 </p>
 
 -   The project is built with python2.7 on Ubuntu 16.04. Dependencies include ROS kinetic package, smach state machine, and other drivers for the turtle bot sensor. If these are not installed please refer to the official installation page on ROS wiki or official python installation websites.
@@ -98,6 +112,8 @@ Create or navigate the existing catkin workspace and clone our repository.
     
     <p align = "center">
         <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Bumper.jpg" width="40%" height="40%">
+    <br>
+    <em>Fig. 8: Robot Bumper</em>
     </p>
 
 - Track followling:
@@ -131,14 +147,17 @@ searching strategy:
 
 ## _**States**_
 
-![Fig1](smach.png)
+<p align = "center">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/smach.png" width="40%" height="40%" alt>
+    <br>
+    <em>Fig. 9: Root State Machine</em>
+</p>
 
-<figure>
-    <p align = "center">
-        <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/work4_SM.png" width="40%" height="40%">
-        <figcaption>Location 4 Sub State Machine</figcaption>
-    </p>
-</figure>
+<p align = "center">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/work4_SM.png" width="40%" height="40%" alt>
+    <br>
+    <em>Fig. 10: SM_SUB_WORK4</em>
+</p>
 
 -    Our basic strategy includes using pid controller to follow lines, using opencv contour shape detection to detect shapes, using amcl to do localization, using move_base to reach goal point in the location 4.
 -    Here are the process details:
