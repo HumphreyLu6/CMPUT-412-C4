@@ -37,7 +37,7 @@ In general, the robot needs to follow a track and do different specific tasks at
 </p>
 
 <p align = "center">
-    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Box.jpg" width="40%" height="40%">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Box.png" width="40%" height="40%">
 </p>
 
 - ***Location 3*** is the last location which is marked by three half red lines, each red line indicated there is a shape located counterclockwise from the track, the robot needs to find the one with same shape as the green shape at location 2.
