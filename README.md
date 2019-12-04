@@ -66,7 +66,7 @@ Create or navigate the existing catkin workspace and clone our repository.
 
 ## _**Execution**_
 
--   Once you have the package in your workspace, change the package name to c3
+-   Once you have the package in your workspace, change the package name to c4
 
     ```
     cd (your path)/catkin_ws
