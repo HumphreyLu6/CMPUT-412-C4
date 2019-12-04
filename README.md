@@ -132,6 +132,14 @@ searching strategy:
 ## _**States**_
 
 ![Fig1](smach.png)
+
+<figure>
+    <p align = "center">
+        <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/work4_SM.png" width="40%" height="40%">
+        <figcaption>Location 4 Sub State Machine</figcaption>
+    </p>
+</figure>
+
 -    Our basic strategy includes using pid controller to follow lines, using opencv contour shape detection to detect shapes, using amcl to do localization, using move_base to reach goal point in the location 4.
 -    Here are the process details:
 -    Firstly, the robot will start with "Wait" state, once the user send unmarked dock point number and start signal, the robot will start follow the white line.
