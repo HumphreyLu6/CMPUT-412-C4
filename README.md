@@ -89,6 +89,11 @@ Create or navigate the existing catkin workspace and clone our repository.
     - In the function usb_callback, we use the usb camera to detect whether we have a long red line to  short red line. The method is that if it is a long red line there won't be any white in the middle of the track. We think its quicker and easier to identify the difference between two lines.
     - To ensure the target objects are included into the camera, the robot back up a little bit to fit the camera view into the right position.
 
+- Box Pushing:
+    - Primarily, we wanted to push the box directly towards the goal without break, and then fine-tune the position of the box by detecting if there are significant position differences between the box center and goal.
+    - After a few experiments, we found that when the initial position of the box center is far away from goal (2, 3 squares in between), the robot easily lost the box during pushing the box, and sometimes the box is pushed against the wall. The errors of AMCL navigation is magnified by pushing the box. So we decided to push a short distance at one time. 
+    - The basic steps are 1. Using AMCL navigation to approach the box,  2. pushing forward 3.backing up 4. Going back to 1, repeat until the goal is reached. The fine-tuning step is being abandoned since it always "over" pushes the box.
+
 - Shape detection:
 
     - Used cv2.pyrMeanShiftFiltering to blur image when detect contours' shapes, but this caused nonnegligible lag.
