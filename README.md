@@ -118,27 +118,27 @@ searching strategy:
     - To improve the runtime performance, we choose to not launch rviz, this can be enabled through commenting out lines in launch file.
 
 ## _**States**_
+
+![Fig1](smach.png)
 -    Our basic strategy includes using pid controller to follow lines, using opencv contour shape detection to detect shapes, using amcl to do localization, using move_base to reach goal point in the location 4.
 -    Here are the process details:
 -    Firstly, the robot will start with "Wait" state, once the user send unmarked dock point number and start signal, the robot will start follow the white line.
 -    As the robot is running, it will find out whether there is a red long line(which means stop) or a red short line(which means detecting the image) and decide if it needs to switch states.
 -    For different working tasks, the difference is based on the global variable of "current_work"
 -    The state machine will have some kind of work flow like this:
-        - 1. Following state will keep the robot following the white line
-        - 2. If the robot hit a long red line it will enter the PassThrough state to perform a stop at the long red line
-        - 3. If the robot hit a short red line it will enter the TaskControl state to determine how many 90 degrees it should trun and then it goes into Rotate state which controls the robot's rotation based on the yaw value.
-        - 4. In the Rotate state, the robot will determine what kind of work it will do based on current value.
+        - 1. "Following" state will keep the robot following the white line
+        - 2. If the robot hit a long red line it will enter the "PassThrough" state to perform a stop at the long red line
+        - 3. If the robot hit a short red line it will enter the "TaskControl" state to determine how many 90 degrees it should trun and then it goes into 'Rotate' state which controls the robot's rotation based on the yaw value.
+        - 4. In the 'Rotate' state, the robot will determine what kind of work it will do based on current value.
         - 5. For the task to count number of white tubes, the robot will detect how many red contours are in the front and indicate the number by Led lights and sound.
         - 6. For the task at location 2, the robot will detect how many red/green contours are in the front and indicate the total number by Led lights and sound, the robot will remember what shape the green contour is in location2.
         - 7. When the robot goes to 'off-ramp' spot, it will firstly try to identify the location of the AR tag and the box. Then it will calculate the relative distance base on the data it gets. If the AR tag or the box is too far away to be found, it will drive to position 6 and 7 and try to get the AR tags.
-        - 8. After the tags have been successfully found, the robot will find out the rotation of the box and try to push the box from sideways. The robot also will keep the distance to make sure the box is in right rotation before pushing the box since the razer scan can hardly find where the box is when pushin the box(the distance between box and the camera is below the minimal distance the camera can scan)
-        - 9. For each square the robot push, it will pause a little and step back to make sure the box is in the right rotation and it is pushing the box in the right way.
+        - 8. After the tags have been successfully found, the robot will go to the other side of the box than goal and try to push the box from sideways.
+        - 9. For each square the robot push, it will stop and step back to make sure the box is in the right rotation and it is pushing the box in the right way.
         - 10. After the box has been push to the right parking spot which is right in front of the AR tag, the robot will find a way to postition 6,7 and 8 to find out if the shape it saw in location 2 is among the three tags.
         - 11. After the robot finishs all box pushing tasks it will go to the 'on-ramp' point and continue the 'lcoation 3' task, which is find the matching shape at location 2.
         - 12. The robot will go through all the shapes when selecting the shapes. If it found the right one it will make a turn on a light and make a sound.
         - 13. The run is ended when the robot is back to the starting line
-
-![Fig1](smach.png)
 
 ## ***Sources***
 - https://github.com/jackykc/comp5
