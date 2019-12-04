@@ -148,7 +148,7 @@ searching strategy:
 ## _**States**_
 
 <p align = "center">
-    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/smach.png" width="40%" height="40%" alt>
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/smach.png" alt>
     <br>
     <em>Fig. 9: Root State Machine</em>
 </p>
