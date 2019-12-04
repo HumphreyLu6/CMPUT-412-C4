@@ -1,4 +1,4 @@
-# CMPUT412 FALL 2019 - competition 4 report
+# CMPUT412 FALL 2019 - Competition 4 Report
 
 ## ***Overview***
 
