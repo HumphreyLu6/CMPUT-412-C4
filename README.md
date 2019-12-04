@@ -36,6 +36,10 @@ In general, the robot needs to follow a track and do different specific tasks at
 <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location4.png" width="40%" height="40%">
 </p>
 
+<p align = "center">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Box.jpg" width="40%" height="40%">
+</p>
+
 - ***Location 3*** is the last location which is marked by three half red lines, each red line indicated there is a shape located counterclockwise from the track, the robot needs to find the one with same shape as the green shape at location 2.
 
 <p align = "center">
@@ -51,6 +55,10 @@ In general, the robot needs to follow a track and do different specific tasks at
     - Logitech Controller
     - Two foam bumpers
     
+<p align = "center">
+    <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Robot.jpg" width="40%" height="40%">
+</p>
+
 -   The project is built with python2.7 on Ubuntu 16.04. Dependencies include ROS kinetic package, smach state machine, and other drivers for the turtle bot sensor. If these are not installed please refer to the official installation page on ROS wiki or official python installation websites.
 
     -   Kobuki  [http://wiki.ros.org/kobuki/Tutorials/Installation/kinetic](http://wiki.ros.org/kobuki/Tutorials/Installation/kinetic)
@@ -87,6 +95,10 @@ Create or navigate the existing catkin workspace and clone our repository.
 ## ***Strategies***:
 - Bumper:
     - To minimize the effect to the line fpllowing, we cut a long bumper into half and stuff them beside the webcam, this makes sure the webcam funtions as before.
+    
+    <p align = "center">
+        <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Bumper.jpg" width="40%" height="40%">
+    </p>
 
 - Track followling:
     - We put a usb camera at the lower front of the turtle_bot to follow the white line on the ground and the asus camera is used to detect shape of the target. The lower position of the camera improves precision with less exception tolerance as a trade-off.
