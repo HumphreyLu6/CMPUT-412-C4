@@ -2,7 +2,7 @@
 
 ## ***Overview***
 
-This repo is the competition 3 implementations of group 3, and it is built upon
+This repo is the competition 4 implementations of group 3, and it is built upon
 [https://github.com/HumphreyLu6/CMPUT-412-C3]
 [https://github.com/TianqiCS/CMPUT412-C2]
 [https://github.com/TianqiCS/CMPUT412-C1]
@@ -13,7 +13,7 @@ Using a Turtlebot to do multiple tasks consists of following track, detecting co
 
 ## ***Tasks***
 
-In general, the robot needs to follow a track and do different specific taks at various locations. The track is white lines on the ground, full read lines and half red lines indicates the robot needs to stop, and half red lines also indicate the robot has specific tasks in the locations. Tasks for each location are detailed as following:
+In general, the robot needs to follow a track and do different specific tasks at various locations. The track is white lines on the ground, full read lines and half red lines indicates the robot needs to stop, and half red lines also indicate the robot has specific tasks in the locations. Tasks for each location are detailed as following:
 
 <p align = "center">
     <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/course.png" width="80%" height="80%">
@@ -30,20 +30,27 @@ In general, the robot needs to follow a track and do different specific taks at 
 <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location2.png" width="40%" height="40%">
 </p>
 
-- ***Location 4*** is the third location led by a off ramp track. 8 parking spots are located on the floor which are represented by red squares. A AR tag is placed in any one of the 1 - 5 spot, and one of the other spot among (2, 3, 4) has a box with AR tags, the red shapes are placed at spot 6, 7 and 8. The robot need to push the box into the AR tag marked spot and park inside of the spot which has the same shape as the green shape from location 2 to get the full mark. After finishing parking at three spots, the robot needs to find the on ramp location and keep following the track.
+- ***Location 4*** is the third location led by a off ramp track. 8 parking stalls are located on the floor which are represented by red squares. A box with AR tags are placed in one of the 2, 3, 4 stalls, and a different AR tag that indicates goal stall is placed in one of remaining stalls(against the wall), the red shapes are placed at spot 6, 7 and 8. The robot need to push the box into the AR tag marked stall and park inside of the stall which has the same shape as the green shape from location 2. After finishing parking at three spots, the robot needs to find the on ramp location and keep following the track.
 
 <p align = "center">
 <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location4.png" width="40%" height="40%">
 </p>
 
-- ***Location 3*** is the last location which is marked by three hald red lines, each red line indicated there is a shape located counterclockwise from the track, the robot needs to find the one with same shape as the green shape at location 2.
+- ***Location 3*** is the last location which is marked by three half red lines, each red line indicated there is a shape located counterclockwise from the track, the robot needs to find the one with same shape as the green shape at location 2.
 
 <p align = "center">
 <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location3.png" width="40%" height="40%">
 </p>
 
 ## _**Pre-requisites**_
-
+-   In order to execute this competition, a few hardwares used are listed below:
+    - A laptop
+    - Kobuki Turtlebot 2
+    - Asus Xtion Pro RGB-D Camera
+    - USB webcam
+    - Logitech Controller
+    - Two foam bumpers
+    
 -   The project is built with python2.7 on Ubuntu 16.04. Dependencies include ROS kinetic package, smach state machine, and other drivers for the turtle bot sensor. If these are not installed please refer to the official installation page on ROS wiki or official python installation websites.
 
     -   Kobuki  [http://wiki.ros.org/kobuki/Tutorials/Installation/kinetic](http://wiki.ros.org/kobuki/Tutorials/Installation/kinetic)
@@ -70,22 +77,19 @@ Create or navigate the existing catkin workspace and clone our repository.
     now you can launch the program using
 
     ```
-    roslaunch c3 c3_main.launch
+    roslaunch c4 c4.launch
     ```
 
--   arguments and parameters In the launch file c3.launch, the file will launch basic driver for the kuboki robot which is essential for the competition ( minimal.launch and 3dsensor.launch). Next, the file will bring up the basic node for this competition like main file and a usb camera. Finally, there are different sections for in the launch file like example.yaml to give the uvc camera  a basic understanding of view.
+-   arguments and parameters In the launch file c4.launch, the file will launch basic driver for the kuboki robot which is essential for the competition ( minimal.launch and 3dsensor.launch). Next, the file will bring up the basic node for this competition like main file and a usb camera. Finally, there are different sections for in the launch file like example.yaml to give the uvc camera  a basic understanding of view.
 
--  A map file of the lab is added to the file folder which is used for work4(the new location).   In the c3.launch file, the ar_track_alvar is used to regonize the AR tag. We comment out the view_nevigation package to increase the performance of the robot at runtime.
+-  A map file of the lab is added to the file folder which is used for location 4. In the c4.launch file, the ar_track_alvar is used to regonize the AR tag. We comment out the view_nevigation package to increase the performance of the robot at runtime.
 
 ## ***Strategies***:
 - Bumper:
-
-    - pic of bumper
-    - We want to minimize the effect to previous codes from last competition, we cut a long bumper in half and put it like in the picture to make sure the usb camera which is used to track the line is unaffected.
+    - To minimize the effect to the line fpllowing, we cut a long bumper into half and stuff them beside the webcam, this makes sure the webcam funtions as before.
 
 - Track followling:
-
-    - We put additional usb camera at the lower front of the turtle_bot to follow the white line on the ground and the asus camera is used to detect shape of the target. The lower position of the camera improves precision with less exception tolerance as a trade-off.
+    - We put a usb camera at the lower front of the turtle_bot to follow the white line on the ground and the asus camera is used to detect shape of the target. The lower position of the camera improves precision with less exception tolerance as a trade-off.
     - In the function usb_callback, we use the usb camera to detect whether we have a long red line to  short red line. The method is that if it is a long red line there won't be any white in the middle of the track. We think its quicker and easier to identify the difference between two lines.
     - To ensure the target objects are included into the camera, the robot back up a little bit to fit the camera view into the right position.
 
@@ -95,12 +99,10 @@ Create or navigate the existing catkin workspace and clone our repository.
     - The basic steps are 1. Using AMCL navigation to approach the box,  2. pushing forward, 3.backing up, 4. Going back to 1, repeat until the goal is reached. The fine-tuning step is being abandoned since it always "over" pushes the box.
 
 - Shape detection:
-
     - Used cv2.pyrMeanShiftFiltering to blur image when detect contours' shapes, but this caused nonnegligible lag.
     - To ensure shape detect result is correct, we detect twice with a few seconds gap to check if results are the same.
 
 - AMCL and GMapping:
-
     - We remapped the whole area, but in this time our map is parallel to the room. It is very easy to understand the geometry relationship in this way. After a fairly accurate map is established, we use photoshop to clear some noise of the map. we set the way points based on the map. By testing out each waypoint one by one, we want to make sure the run time error genreate by the odem has the minimum effect on the final parking spot.
     - Since the usb camera is stilling running during parking into these red squares, it is likely that the robot takes the parking red square as the functional red lines. New global varibies have set to avoid these conflicts.
 searching strategy:
@@ -110,7 +112,6 @@ searching strategy:
     - The robot will skip the rest of waypoints if all task at location 4 have been completed.
 
 - Project management:
-
     - The code file for work4 is seperate from the main code for further improvement on the coding style.
     - Heavliy used simple task functions like rotation and signal (led and sound) have been seperated from the original file to increase simplicity and reusability.
     - Based on the experience we collected from demo4 and demo5, we carefully develop the map using view_nevigation package.
