@@ -2,10 +2,10 @@
 
 ## ***Overview***
 
-This repo is the competition 3 implementations of group 3, and it is built upon
-[https://github.com/HumphreyLu6/CMPUT-412-C3]
-[https://github.com/TianqiCS/CMPUT412-C2]
-[https://github.com/TianqiCS/CMPUT412-C1]
+This repo is the competition 3 implementations of group 3, and it is built upon  
+[https://github.com/HumphreyLu6/CMPUT-412-C3]  
+[https://github.com/TianqiCS/CMPUT412-C2]  
+[https://github.com/TianqiCS/CMPUT412-C1]  
 
 ## ***Competiiton Objectives***
 
@@ -78,6 +78,10 @@ Create or navigate the existing catkin workspace and clone our repository.
 -  A map file of the lab is added to the file folder which is used for work4(the new location).   In the c3.launch file, the ar_track_alvar is used to regonize the AR tag. We comment out the view_nevigation package to increase the performance of the robot at runtime.
 
 ## ***Strategies***:
+- Bumper:
+
+    - pic of bumper
+    - We want to minimize the effect to previous codes from last competition, we cut a long bumper in half and put it like in the picture to make sure the usb camera which is used to track the line is unaffected.
 
 - Track followling:
 
@@ -90,9 +94,9 @@ Create or navigate the existing catkin workspace and clone our repository.
     - Used cv2.pyrMeanShiftFiltering to blur image when detect contours' shapes, but this caused nonnegligible lag.
     - To ensure shape detect result is correct, we detect twice with a few seconds gap to check if results are the same.
 
-- Docking with AMCL and GMapping:
+- AMCL and GMapping:
 
-    - After a fairly accurate map is established, we set the way points based on the map. By testing out each waypoint one by one, we want to make sure the run time error genreate by the odem has the minimum effect on the final parking spot.
+    - We remapped the whole area, but in this time our map is parallel to the room. It is very easy to understand the geometry relationship in this way. After a fairly accurate map is established, we use photoshop to clear some noise of the map. we set the way points based on the map. By testing out each waypoint one by one, we want to make sure the run time error genreate by the odem has the minimum effect on the final parking spot.
     - Since the usb camera is stilling running during parking into these red squares, it is likely that the robot takes the parking red square as the functional red lines. New global varibies have set to avoid these conflicts.
 searching strategy:
     - We used exhaustive search for the parking spot to make sure the robot complete the task and fit into all the squares.
