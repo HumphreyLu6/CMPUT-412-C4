@@ -1,14 +1,15 @@
-# CMPUT412 FALL 2019 - competition 3 report
+# CMPUT412 FALL 2019 - competition 4 report
 
 ## ***Overview***
 
 This repo is the competition 3 implementations of group 3, and it is built upon
+[https://github.com/HumphreyLu6/CMPUT-412-C3]
 [https://github.com/TianqiCS/CMPUT412-C2]
 [https://github.com/TianqiCS/CMPUT412-C1]
 
 ## ***Competiiton Objectives***
 
-Using a Turtlebot to do multiple tasks consists of following track, detecting contours and docking with GMapping, AMCL. Scores are given based on the completeness of tasks, performance of each task and time usage of each run.
+Using a Turtlebot to do multiple tasks consists of following track, detecting contours, docking with AMCL and box pushing. Scores are given based on the completeness of tasks, performance of each tasks in a total of 10 minutes run.
 
 ## ***Tasks***
 
@@ -29,7 +30,7 @@ In general, the robot needs to follow a track and do different specific taks at 
 <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location2.png" width="40%" height="40%">
 </p>
 
-- ***Location 4*** is the third location led by a off ramp track. 8 parking spots are located on the floor which are represented by red squares. The robot needs to dock at three specific spots. One spot has a AR tag places in the front, one spot has a red shape in the front, the shape is same as the green shape at location 2, the thrid spot is specified at the beginning of the competition. The robot need to park inside of the red square to get the full mark. After finishing parking at three spots, the robot needs to find the on ramp location and keep following the track.
+- ***Location 4*** is the third location led by a off ramp track. 8 parking spots are located on the floor which are represented by red squares. A AR tag is placed in any one of the 1 - 5 spot, and one of the other spot among (2, 3, 4) has a box with AR tags, the red shapes are placed at spot 6, 7 and 8. The robot need to push the box into the AR tag marked spot and park inside of the spot which has the same shape as the green shape from location 2 to get the full mark. After finishing parking at three spots, the robot needs to find the on ramp location and keep following the track.
 
 <p align = "center">
 <img src="https://github.com/HumphreyLu6/CMPUT-412-C3/blob/master/images%20and%20video/location4.png" width="40%" height="40%">
