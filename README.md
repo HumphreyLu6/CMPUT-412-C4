@@ -92,7 +92,7 @@ Create or navigate the existing catkin workspace and clone our repository.
 - Box Pushing:
     - Primarily, we wanted to push the box directly towards the goal without break, and then fine-tune the position of the box by detecting if there are significant position differences between the box center and goal.
     - After a few experiments, we found that when the initial position of the box center is far away from goal (2, 3 squares in between), the robot easily lost the box during pushing the box, and sometimes the box is pushed against the wall. The errors of AMCL navigation is magnified by pushing the box. So we decided to push a short distance at one time. 
-    - The basic steps are 1. Using AMCL navigation to approach the box,  2. pushing forward 3.backing up 4. Going back to 1, repeat until the goal is reached. The fine-tuning step is being abandoned since it always "over" pushes the box.
+    - The basic steps are 1. Using AMCL navigation to approach the box,  2. pushing forward, 3.backing up, 4. Going back to 1, repeat until the goal is reached. The fine-tuning step is being abandoned since it always "over" pushes the box.
 
 - Shape detection:
 
