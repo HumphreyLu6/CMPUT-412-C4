@@ -67,6 +67,8 @@ In general, the robot needs to follow a track and do different specific tasks at
     - Logitech Controller
     - Two foam bumpers
     
+    All these hardwares need to be assembled like the robot in the _**Fig. 7**_ to make sure everything runs correctly. Notice that the USB webcam is in between the two foam bumpers.
+    
 <p align = "center">
     <img src="https://github.com/HumphreyLu6/CMPUT-412-C4/blob/master/images%20and%20video/Robot.jpg" width="40%" height="40%">
     <br>
