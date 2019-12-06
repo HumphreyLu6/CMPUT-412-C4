@@ -84,6 +84,8 @@ In general, the robot needs to follow a track and do different specific tasks at
     -   Python2  [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
     -   Smach  [http://wiki.ros.org/smach](http://wiki.ros.org/smach)
+    
+    -   OpenCV [https://opencv.org](https://opencv.org)
 
 Create or navigate the existing catkin workspace and clone our repository.
 
